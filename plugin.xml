@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<plugin xmlns="http://www.phonegap.com/ns/plugins/1.0" xmlns:android="http://schemas.android.com/apk/res/android" id="nl.afas.cordova.plugin.secureLocalStorage" version="0.0.1">
+
+    <name>Secure LocalStorage</name>
+    <description>Secure localStorage</description>
+    <license>MIT</license>
+
+    <engines>
+        <engine name="cordova" version=">=3.0.0" />
+    </engines>
+
+    <js-module src="www/plugins.SecureLocalStorage.js" name="SecureLocalStorage">
+        <clobbers target="cordova.plugins.SecureLocalStorage" />
+    </js-module>
+
+    <!-- Android -->
+    <platform name="android">
+        <source-file src="src/android/nl/afas/cordova/plugin/SecureLocalStorage/SecureLocalStorage.java" target-dir="src/nl/afas/cordova/plugin/secureLocalStorage" />
+        <config-file target="res/xml/config.xml" parent="/*">
+            <feature name="SecureLocalStorage">
+                <param name="android-package" value="nl.afas.cordova.plugin.secureLocalStorage.SecureLocalStorage" />
+            </feature>
+        </config-file>
+        <config-file target="AndroidManifest.xml" parent="/*">
+            <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+        </config-file>
+    </platform>
+
+    <!-- iOS -->
+    <platform name="ios">
+        <config-file target="config.xml" parent="/*">
+            <feature name="SecureLocalStorage">
+                <param name="ios-package" value="SecureLocalStorage" />
+            </feature>
+        </config-file>
+        <source-file src="src/ios/SecureLocalStorage.m" />
+        <header-file src="src/ios/SecureLocalStorage.h" />
+    </platform>
+
+	<!-- WP8 -->
+	<platform name="wp8">
+		<config-file target="config.xml" parent="/*">
+		  <feature name="SecureLocalStorage">
+			<param name="wp-package" value="SecureLocalStorage" />
+		  </feature>
+		</config-file>
+		<source-file src="src/wp8/SecureLocalStorage.cs" />
+	</platform>
+	
+
+	 <!-- windows -->
+    <platform name="windows">
+        <js-module src="src/windows/SecureLocalStorage.js" name="SecureLocalStorage">
+            <merges target="" />
+        </js-module>
+    </platform>
+</plugin>
