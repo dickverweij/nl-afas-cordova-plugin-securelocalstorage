@@ -48,6 +48,9 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+
 import java.math.BigInteger;
 import android.security.KeyPairGeneratorSpec;
 import java.security.KeyPairGenerator;
@@ -76,110 +79,124 @@ import java.security.cert.CertificateException;
 
 public class SecureLocalStorage extends CordovaPlugin {
 
-	private final String alias = "AFASPOCKETPPKEY";
+    private final String alias = "AFASPOCKETPPKEY";
 	private Activity _activity;
 	
 	@Override
 	public void initialize(CordovaInterface cordova, CordovaWebView webView) {
-		super.initialize(cordova, webView);
-		_activity = cordova.getActivity();
-	}
+        super.initialize(cordova, webView);
+        _activity = cordova.getActivity();
+    }
 
 	@Override
 	public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
-		try{
-			KeyStore keyStore = initKeyStore();
+	    try{
+	        KeyStore keyStore = initKeyStore();
 
-			// initial keystore
-			File file = _activity.getBaseContext().getFileStreamPath("secureLocalStorage.dat");
-			Hashtable<String,String> hashtable = new Hashtable<String,String>();
-			if (!file.exists()) {
-				writeAndCryptHashtable(keyStore, hashtable);
-			}
+	        // initial keystore
+	        File file = _activity.getBaseContext().getFileStreamPath("secureLocalStorage.dat");
+	        Hashtable<String,String> hashtable = new Hashtable<String,String>();
+	        if (!file.exists()) {
+	            writeAndCryptHashtable(keyStore, hashtable);
+	        }
         
-			if (action.equals("clear")){
-				writeAndCryptHashtable(keyStore, hashtable);
-				return true;
-			}
+	        if (action.equals("clear")){
+	            writeAndCryptHashtable(keyStore, hashtable);
+	            return true;
+	        }
 
-			String key = args.getString(0);
-			hashtable = readAndDecryptHashtable(keyStore);
+	        String key = args.getString(0);
+	        hashtable = readAndDecryptHashtable(keyStore);
 
-			if (action.equals("getItem")){
-				if (hashtable.containsKey(key))
-				{
-					callbackContext.success(hashtable.get(key));
-				}
-				else
-				{
-					callbackContext.error("");
-				}
+	        if (action.equals("getItem")){
+	            if (hashtable.containsKey(key))
+	            {
+	                callbackContext.success(hashtable.get(key));
+	            }
+	            else
+	            {
+	                callbackContext.error("");
+	            }
 
-				return true;	
-			} 
-			else if (action.equals("setItem")){
+	            return true;	
+	        } 
+	        else if (action.equals("setItem")){
 			
-				hashtable.put(key, args.getString(1));
-				writeAndCryptHashtable(keyStore, hashtable);
+	            hashtable.put(key, args.getString(1));
+	            writeAndCryptHashtable(keyStore, hashtable);
 
-				return true;	
-			} 
+	            return true;	
+	        } 
 
-		}
-		catch (Exception ex){
-			callbackContext.error(ex.getMessage());
-			return true;	
-		}
+	    }
+	    catch (Exception ex){
 
-		return false;
+            try
+            {
+                StringWriter
+                sw = new StringWriter();
+                PrintWriter
+                pw = new PrintWriter(sw);
+                ex.printStackTrace(pw);
+
+                callbackContext.error(sw.toString());
+            }
+            catch (Exception ex2)
+            {
+                callbackContext.error(ex.getMessage() + " " + ex2.getMessage());
+            }
+            return true;	
+	    }
+
+	    return false;
 	}
 
 	private KeyStore initKeyStore() throws IOException,CertificateException, KeyStoreException, NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException {
-        KeyStore keyStore = KeyStore.getInstance("AndroidKeyStore");
-        keyStore.load(null);
+	    KeyStore keyStore = KeyStore.getInstance("AndroidKeyStore");
+	    keyStore.load(null);
         
-        if (!keyStore.containsAlias(alias)) {
-            Calendar start = Calendar.getInstance();
-            Calendar end = Calendar.getInstance();
-            end.add(Calendar.YEAR, 1);
-            KeyPairGeneratorSpec spec = new KeyPairGeneratorSpec.Builder(_activity)
+	    if (!keyStore.containsAlias(alias)) {
+	        Calendar start = Calendar.getInstance();
+	        Calendar end = Calendar.getInstance();
+	        end.add(Calendar.YEAR, 1);
+	        KeyPairGeneratorSpec spec = new KeyPairGeneratorSpec.Builder(_activity)
                     .setAlias(alias)
                     .setSubject(new X500Principal(String.format("CN=%s, O=%s", alias, _activity.getBaseContext().getPackageName())))
                     .setSerialNumber(BigInteger.ONE)
                     .setStartDate(start.getTime())
                     .setEndDate(end.getTime())
                     .build();
-            KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA", "AndroidKeyStore");
-            generator.initialize(spec);
+	        KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA", "AndroidKeyStore");
+	        generator.initialize(spec);
 
-            generator.generateKeyPair();
-        }
-        return keyStore;
-    }
+	        generator.generateKeyPair();
+	    }
+	    return keyStore;
+	}
 
 	private Hashtable<String, String> readAndDecryptHashtable(KeyStore keyStore) throws KeyStoreException, UnrecoverableEntryException, NoSuchAlgorithmException, NoSuchProviderException, NoSuchPaddingException, InvalidKeyException, IOException, ClassNotFoundException {
         KeyStore.PrivateKeyEntry privateKeyEntry = (KeyStore.PrivateKeyEntry) keyStore.getEntry(alias, null);
 
-        FileInputStream fis = _activity.openFileInput("secureLocalStorage.dat");
-        RSAPrivateKey privateKey = (RSAPrivateKey) privateKeyEntry.getPrivateKey();
+	    FileInputStream fis = _activity.openFileInput("secureLocalStorage.dat");
+	    RSAPrivateKey privateKey = (RSAPrivateKey) privateKeyEntry.getPrivateKey();
 
-        Cipher output = Cipher.getInstance("RSA/ECB/PKCS1Padding", "AndroidOpenSSL");
-        output.init(Cipher.DECRYPT_MODE, privateKey);
+	    Cipher output = Cipher.getInstance("RSA/ECB/PKCS1Padding", "AndroidOpenSSL");
+	    output.init(Cipher.DECRYPT_MODE, privateKey);
 
-        CipherInputStream cipherInputStream = new CipherInputStream(
+	    CipherInputStream cipherInputStream = new CipherInputStream(
                 fis, output);
-        ArrayList<Byte> values = new ArrayList<Byte>();
-        int nextByte;
-        while ((nextByte = cipherInputStream.read()) != -1) {
-            values.add((byte) nextByte);
-        }
+	    ArrayList<Byte> values = new ArrayList<Byte>();
+	    int nextByte;
+	    while ((nextByte = cipherInputStream.read()) != -1) {
+	        values.add((byte) nextByte);
+	    }
 
-        byte[] bytes = new byte[values.size()];
-        for (int i = 0; i < bytes.length; i++) {
+	    byte[] bytes = new byte[values.size()];
+	    for (int i = 0; i < bytes.length; i++) {
             bytes[i] = values.get(i).byteValue();
-        }
+	    }
 
-        ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(bytes));
+    ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(bytes));
         return (Hashtable<String,String>) ois.readObject();
     }
 
@@ -205,4 +222,4 @@ public class SecureLocalStorage extends CordovaPlugin {
         bos.close();
     }
 
-}
+    }
