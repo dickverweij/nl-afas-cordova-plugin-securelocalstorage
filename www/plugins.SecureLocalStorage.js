@@ -34,4 +34,23 @@ SecureLocalStorage.prototype.getItem = function (key)
         });
 };
 
+SecureLocalStorage.prototype.setItem = function (key, value) {
+    return new Promise(function (resolve, reject) {
+        exec(resolve, reject, 'SecureLocaleStorage', 'setItem', key, value);
+    });
+};
+
+SecureLocalStorage.prototype.removeItem = function (key) {
+    return new Promise(function (resolve, reject) {
+        exec(resolve, reject, 'SecureLocaleStorage', 'removeItem', key);
+    });
+};
+
+SecureLocalStorage.prototype.clear = function () {
+    return new Promise(function (resolve, reject) {
+        exec(resolve, reject, 'SecureLocaleStorage', 'clear');
+    });
+};
+
+
 window.SecureLocalStorage = new SecureLocalStorage();

@@ -25,47 +25,73 @@ package io.github.pwlin.cordova.plugins.fileopener2;
 import java.io.File;
 
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.widget.Toast;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
-//import android.util.Log;
 
+import android.app.Activity;
 import org.apache.cordova.CordovaPlugin;
+import org.apache.cordova.CordovaInterface;
+import org.apache.cordova.CordovaWebView;
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.PluginResult;
 import org.apache.cordova.CordovaResourceApi;
+import android.content.Context;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.math.BigInteger;
+import android.security.KeyPairGeneratorSpec;
 import java.security.KeyPairGenerator;
 import java.security.KeyStore;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Hashtable;
 
 import javax.crypto.Cipher;
 import javax.crypto.CipherInputStream;
 import javax.crypto.CipherOutputStream;
+import javax.crypto.NoSuchPaddingException;
 import javax.security.auth.x500.X500Principal;
 
+import org.json.JSONException;
+import java.io.IOException;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.UnrecoverableEntryException;
+import java.security.cert.CertificateException;
 
 public class SecureLocalStorage extends CordovaPlugin {
 
 	private final String alias = "AFASPOCKETPPKEY";
+	private Activity _activity;
 	
+	@Override
+	public void initialize(CordovaInterface cordova, CordovaWebView webView) {
+		super.initialize(cordova, webView);
+		_activity = cordova.getActivity();
+	}
+
 	@Override
 	public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
 		try{
 			KeyStore keyStore = initKeyStore();
 
 			// initial keystore
-			File file = getBaseContext().getFileStreamPath("secureLocalStorage.dat");
+			File file = _activity.getBaseContext().getFileStreamPath("secureLocalStorage.dat");
 			Hashtable<String,String> hashtable = new Hashtable<String,String>();
 			if (!file.exists()) {
 				writeAndCryptHashtable(keyStore, hashtable);
@@ -77,7 +103,7 @@ public class SecureLocalStorage extends CordovaPlugin {
 			}
 
 			String key = args.getString(0);
-			hastable = readAndDecryptHashtable(keyStore);
+			hashtable = readAndDecryptHashtable(keyStore);
 
 			if (action.equals("getItem")){
 				if (hashtable.containsKey(key))
@@ -86,7 +112,7 @@ public class SecureLocalStorage extends CordovaPlugin {
 				}
 				else
 				{
-					callbackContext.failure();
+					callbackContext.error("");
 				}
 
 				return true;	
@@ -101,7 +127,7 @@ public class SecureLocalStorage extends CordovaPlugin {
 
 		}
 		catch (Exception ex){
-			callbackContext.failure(ex.getMessage());
+			callbackContext.error(ex.getMessage());
 			return true;	
 		}
 
@@ -116,9 +142,9 @@ public class SecureLocalStorage extends CordovaPlugin {
             Calendar start = Calendar.getInstance();
             Calendar end = Calendar.getInstance();
             end.add(Calendar.YEAR, 1);
-            KeyPairGeneratorSpec spec = new KeyPairGeneratorSpec.Builder(this)
+            KeyPairGeneratorSpec spec = new KeyPairGeneratorSpec.Builder(_activity)
                     .setAlias(alias)
-                    .setSubject(new X500Principal(String.format("CN=%s, O=%s", alias, getBaseContext().getPackageName())))
+                    .setSubject(new X500Principal(String.format("CN=%s, O=%s", alias, _activity.getBaseContext().getPackageName())))
                     .setSerialNumber(BigInteger.ONE)
                     .setStartDate(start.getTime())
                     .setEndDate(end.getTime())
@@ -134,7 +160,7 @@ public class SecureLocalStorage extends CordovaPlugin {
 	private Hashtable<String, String> readAndDecryptHashtable(KeyStore keyStore) throws KeyStoreException, UnrecoverableEntryException, NoSuchAlgorithmException, NoSuchProviderException, NoSuchPaddingException, InvalidKeyException, IOException, ClassNotFoundException {
         KeyStore.PrivateKeyEntry privateKeyEntry = (KeyStore.PrivateKeyEntry) keyStore.getEntry(alias, null);
 
-        FileInputStream fis = openFileInput("secureLocalStorage.dat");
+        FileInputStream fis = _activity.openFileInput("secureLocalStorage.dat");
         RSAPrivateKey privateKey = (RSAPrivateKey) privateKeyEntry.getPrivateKey();
 
         Cipher output = Cipher.getInstance("RSA/ECB/PKCS1Padding", "AndroidOpenSSL");
@@ -170,7 +196,7 @@ public class SecureLocalStorage extends CordovaPlugin {
         Cipher input = Cipher.getInstance("RSA/ECB/PKCS1Padding", "AndroidOpenSSL");
         input.init(Cipher.ENCRYPT_MODE, publicKey);
 
-        FileOutputStream fos = openFileOutput("secureLocalStorage.dat", Context.MODE_PRIVATE);
+        FileOutputStream fos = _activity.openFileOutput("secureLocalStorage.dat", Context.MODE_PRIVATE);
         CipherOutputStream cipherOutputStream = new CipherOutputStream(
                 fos, input);
         cipherOutputStream.write(bos.toByteArray());
