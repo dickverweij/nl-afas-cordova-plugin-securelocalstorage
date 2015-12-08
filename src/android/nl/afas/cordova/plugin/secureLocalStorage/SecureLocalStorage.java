@@ -142,7 +142,7 @@ public class SecureLocalStorage extends CordovaPlugin {
 
         CipherInputStream cipherInputStream = new CipherInputStream(
                 fis, output);
-        ArrayList<Byte> values = new ArrayList<>();
+        ArrayList<Byte> values = new ArrayList<Byte>();
         int nextByte;
         while ((nextByte = cipherInputStream.read()) != -1) {
             values.add((byte) nextByte);
