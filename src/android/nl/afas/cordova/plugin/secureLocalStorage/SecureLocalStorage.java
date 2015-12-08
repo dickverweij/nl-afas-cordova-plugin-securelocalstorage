@@ -57,13 +57,126 @@ import javax.security.auth.x500.X500Principal;
 
 public class SecureLocalStorage extends CordovaPlugin {
 
+	private final String alias = "AFASPOCKETPPKEY";
+	
 	@Override
 	public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
-		if (action.equals("getItem")){
-			callbackContext.success(args.getString(0));
+		try{
+			KeyStore keyStore = initKeyStore();
+
+			// initial keystore
+			File file = getBaseContext().getFileStreamPath("secureLocalStorage.dat");
+			Hashtable<String,String> hashtable = new Hashtable<String,String>();
+			if (!file.exists()) {
+				writeAndCryptHashtable(keyStore, hashtable);
+			}
+        
+			if (action.equals("clear")){
+				writeAndCryptHashtable(keyStore, hashtable);
+				return true;
+			}
+
+			String key = args.getString(0);
+			hastable = readAndDecryptHashtable(keyStore);
+
+			if (action.equals("getItem")){
+				if (hashtable.containsKey(key))
+				{
+					callbackContext.success(hashtable.get(key));
+				}
+				else
+				{
+					callbackContext.failure();
+				}
+
+				return true;	
+			} 
+			else if (action.equals("setItem")){
+			
+				hashtable.put(key, args.getString(1));
+				writeAndCryptHashtable(keyStore, hashtable);
+
+				return true;	
+			} 
+
+		}
+		catch (Exception ex){
+			callbackContext.failure(ex.getMessage());
 			return true;	
 		}
+
 		return false;
 	}
+
+	private KeyStore initKeyStore() throws IOException,CertificateException, KeyStoreException, NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException {
+        KeyStore keyStore = KeyStore.getInstance("AndroidKeyStore");
+        keyStore.load(null);
+        
+        if (!keyStore.containsAlias(alias)) {
+            Calendar start = Calendar.getInstance();
+            Calendar end = Calendar.getInstance();
+            end.add(Calendar.YEAR, 1);
+            KeyPairGeneratorSpec spec = new KeyPairGeneratorSpec.Builder(this)
+                    .setAlias(alias)
+                    .setSubject(new X500Principal(String.format("CN=%s, O=%s", alias, getBaseContext().getPackageName())))
+                    .setSerialNumber(BigInteger.ONE)
+                    .setStartDate(start.getTime())
+                    .setEndDate(end.getTime())
+                    .build();
+            KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA", "AndroidKeyStore");
+            generator.initialize(spec);
+
+            generator.generateKeyPair();
+        }
+        return keyStore;
+    }
+
+	private Hashtable<String, String> readAndDecryptHashtable(KeyStore keyStore) throws KeyStoreException, UnrecoverableEntryException, NoSuchAlgorithmException, NoSuchProviderException, NoSuchPaddingException, InvalidKeyException, IOException, ClassNotFoundException {
+        KeyStore.PrivateKeyEntry privateKeyEntry = (KeyStore.PrivateKeyEntry) keyStore.getEntry(alias, null);
+
+        FileInputStream fis = openFileInput("secureLocalStorage.dat");
+        RSAPrivateKey privateKey = (RSAPrivateKey) privateKeyEntry.getPrivateKey();
+
+        Cipher output = Cipher.getInstance("RSA/ECB/PKCS1Padding", "AndroidOpenSSL");
+        output.init(Cipher.DECRYPT_MODE, privateKey);
+
+        CipherInputStream cipherInputStream = new CipherInputStream(
+                fis, output);
+        ArrayList<Byte> values = new ArrayList<>();
+        int nextByte;
+        while ((nextByte = cipherInputStream.read()) != -1) {
+            values.add((byte) nextByte);
+        }
+
+        byte[] bytes = new byte[values.size()];
+        for (int i = 0; i < bytes.length; i++) {
+            bytes[i] = values.get(i).byteValue();
+        }
+
+        ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(bytes));
+        return (Hashtable<String,String>) ois.readObject();
+    }
+
+    private void writeAndCryptHashtable(KeyStore keyStore, Hashtable<String,String> table) throws IOException, NoSuchAlgorithmException, UnrecoverableEntryException, KeyStoreException, NoSuchProviderException, NoSuchPaddingException, InvalidKeyException {
+
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        ObjectOutputStream oos = new ObjectOutputStream(bos);
+        oos.writeObject(table);
+        oos.close();
+
+        KeyStore.PrivateKeyEntry privateKeyEntry = (KeyStore.PrivateKeyEntry) keyStore.getEntry(alias, null);
+        RSAPublicKey publicKey = (RSAPublicKey) privateKeyEntry.getCertificate().getPublicKey();
+
+        Cipher input = Cipher.getInstance("RSA/ECB/PKCS1Padding", "AndroidOpenSSL");
+        input.init(Cipher.ENCRYPT_MODE, publicKey);
+
+        FileOutputStream fos = openFileOutput("secureLocalStorage.dat", Context.MODE_PRIVATE);
+        CipherOutputStream cipherOutputStream = new CipherOutputStream(
+                fos, input);
+        cipherOutputStream.write(bos.toByteArray());
+        cipherOutputStream.close();
+
+        bos.close();
+    }
 
 }
