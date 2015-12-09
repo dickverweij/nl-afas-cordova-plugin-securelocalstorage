@@ -1,12 +1,14 @@
 Secure localStorage for Cordova
 ==========================
-This plugin will wrap the localStorage api and store data encrypted using IOS keychain or Android keystore. This is no protection for hackers who have physical/root access to 
-your phone. Goal: On unrooted phones protect against reading/writing (without using the host app) the contents stored in the the SecureLocalStorage..
+This plugin will wrap the localStorage api and store data encrypted using IOS keychain or Android keystore. 
+WARNING: This is no protection for hackers who have physical/root access to your phone. 
+
+Goal: Protect against reading/writing the contents stored in the the SecureLocalStorage by other apps.
 Use it to store temporary sensitive data which will survice an app exit/shutdown. 
 
 Requirements
 -------------
-- Android 4 or higher / iOS 6 or higher
+- Android 4.3 or higher / iOS 6 or higher
 - Cordova 3.0 or higher
 
     Installation
@@ -17,8 +19,11 @@ Usage
 ------
     
     cordova.secureLocalStorage.setItem("key" , "value");
+
     cordova.secureLocalStorage.getItem("key").then(function (value) {});
+
     cordova.secureLocalStorage.removeItem("key");
+
     cordova.secureLocalStorage.clear();
 
 
@@ -28,7 +33,7 @@ LICENSE
 --------
 The MIT License (MIT)
 
-Copyright (c) 2015 Dick Verweij AFAS Software BV - d.verweij@afas.nl
+Copyright (c) 2015 dickydick1969@hotmail.com Dick Verweij AFAS Software BV - d.verweij@afas.nl
 
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of
