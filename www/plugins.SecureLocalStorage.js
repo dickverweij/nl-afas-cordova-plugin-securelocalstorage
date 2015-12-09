@@ -30,25 +30,25 @@ SecureLocalStorage.prototype.getItem = function (key)
 {
     return new Promise(function (resolve, reject)
         {
-            exec(resolve, reject, 'SecureLocaleStorage', 'getItem', key);
+            exec(resolve, reject, 'SecureLocalStorage', 'getItem', key);
         });
 };
 
 SecureLocalStorage.prototype.setItem = function (key, value) {
     return new Promise(function (resolve, reject) {
-        exec(resolve, reject, 'SecureLocaleStorage', 'setItem', key, value);
+        exec(resolve, reject, 'SecureLocalStorage', 'setItem', key, value);
     });
 };
 
 SecureLocalStorage.prototype.removeItem = function (key) {
     return new Promise(function (resolve, reject) {
-        exec(resolve, reject, 'SecureLocaleStorage', 'removeItem', key);
+        exec(resolve, reject, 'SecureLocalStorage', 'removeItem', key);
     });
 };
 
 SecureLocalStorage.prototype.clear = function () {
     return new Promise(function (resolve, reject) {
-        exec(resolve, reject, 'SecureLocaleStorage', 'clear');
+        exec(resolve, reject, 'SecureLocalStorage', 'clear');
     });
 };
 
