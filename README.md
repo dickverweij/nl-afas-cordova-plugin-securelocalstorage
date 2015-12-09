@@ -1,6 +1,7 @@
 Secure localStorage for Cordova
 ==========================
-This plugin will wrap the localStorage api and store data encrypted using IOS keychain or Android keystore. 
+This plugin will store local data encrypted using IOS keychain or Android keystore.
+ 
 WARNING: This is no protection for hackers who have physical/root access to your phone. 
 
 Goal: Protect against reading/writing the contents stored in the the SecureLocalStorage by other apps.

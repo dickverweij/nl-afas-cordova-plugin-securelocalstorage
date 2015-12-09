@@ -36,22 +36,5 @@
         <source-file src="src/ios/SecureLocalStorage.m" />
         <header-file src="src/ios/SecureLocalStorage.h" />
     </platform>
-
-	<!-- WP8 -->
-	<platform name="wp8">
-		<config-file target="config.xml" parent="/*">
-		  <feature name="SecureLocalStorage">
-			<param name="wp-package" value="SecureLocalStorage" />
-		  </feature>
-		</config-file>
-		<source-file src="src/wp8/SecureLocalStorage.cs" />
-	</platform>
 	
-
-	 <!-- windows -->
-    <platform name="windows">
-        <js-module src="src/windows/SecureLocalStorage.js" name="SecureLocalStorage">
-            <merges target="" />
-        </js-module>
-    </platform>
 </plugin>
