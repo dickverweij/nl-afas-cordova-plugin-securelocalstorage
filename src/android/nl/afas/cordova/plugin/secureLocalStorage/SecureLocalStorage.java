@@ -125,6 +125,7 @@ public class SecureLocalStorage extends CordovaPlugin {
                             throw new SecureLocalStorageException("Could not delete storage file");
                         }
                     }
+                    callbackContext.success();
                 } else {
 
                     // initialize for reading later
@@ -161,13 +162,14 @@ public class SecureLocalStorage extends CordovaPlugin {
 
                         hashMap.put(key, value);
                         writeAndEncryptStorage(keyStore, hashMap);
-
+                        callbackContext.success();
 
                     } else if (action.equals("removeItem")) {
                         foundMethod = true;
 
                         hashMap.remove(key);
                         writeAndEncryptStorage(keyStore, hashMap);
+                        callbackContext.success();
                     }
                 }
             } finally {
@@ -309,4 +311,29 @@ public class SecureLocalStorage extends CordovaPlugin {
         }
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
