@@ -24,6 +24,7 @@ package nl.afas.cordova.plugin.secureLocalStorage;
 
 import java.io.File;
 
+import org.apache.cordova.PluginResult;
 import org.json.JSONArray;
 
 import android.annotation.TargetApi;
@@ -99,6 +100,7 @@ public class SecureLocalStorage extends CordovaPlugin {
 
     @Override
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
+        PluginResult pluginResult = null;
 
         boolean foundMethod = false;
         try {
@@ -112,7 +114,6 @@ public class SecureLocalStorage extends CordovaPlugin {
             File file = _activity.getBaseContext().getFileStreamPath(SECURELOCALSTORAGEFILE);
             HashMap<String, String> hashMap = new HashMap<String, String>();
 
-
             // lock the access
             lock.lock();
             try {
@@ -125,7 +126,8 @@ public class SecureLocalStorage extends CordovaPlugin {
                             throw new SecureLocalStorageException("Could not delete storage file");
                         }
                     }
-                    callbackContext.success();
+                    pluginResult = new PluginResult(PluginResult.Status.OK);
+					pluginResult.setKeepCallback(false);
                 } else {
 
                     // initialize for reading later
@@ -147,10 +149,13 @@ public class SecureLocalStorage extends CordovaPlugin {
 
                         if (hashMap.containsKey(key)) {
                             if (callbackContext != null) {
-                                callbackContext.success(hashMap.get(key));
+
+                                pluginResult = new PluginResult(PluginResult.Status.OK, hashMap.get(key));
+                                pluginResult.setKeepCallback(false);
                             }
                         } else {
-                            callbackContext.success((String) null);
+                            pluginResult = new PluginResult(PluginResult.Status.OK, (String) null);
+							pluginResult.setKeepCallback(false);
                         }
                     } else if (action.equals("setItem")) {
                         foundMethod = true;
@@ -162,14 +167,16 @@ public class SecureLocalStorage extends CordovaPlugin {
 
                         hashMap.put(key, value);
                         writeAndEncryptStorage(keyStore, hashMap);
-                        callbackContext.success();
+                        pluginResult = new PluginResult(PluginResult.Status.OK);
+						pluginResult.setKeepCallback(false);
 
                     } else if (action.equals("removeItem")) {
                         foundMethod = true;
 
                         hashMap.remove(key);
                         writeAndEncryptStorage(keyStore, hashMap);
-                        callbackContext.success();
+                        pluginResult = new PluginResult(PluginResult.Status.OK);
+						pluginResult.setKeepCallback(false);
                     }
                 }
             } finally {
@@ -182,6 +189,14 @@ public class SecureLocalStorage extends CordovaPlugin {
             pw.close();
             throw new JSONException(sw.toString());
         }
+
+
+
+
+        if (!foundMethod) {
+            pluginResult = new PluginResult(PluginResult.Status.INVALID_ACTION);
+        }
+        callbackContext.sendPluginResult(pluginResult);
 
         return foundMethod;
     }
