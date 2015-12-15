@@ -27,9 +27,28 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #import <MobileCoreServices/MobileCoreServices.h>
 
 @implementation SecureLocalStorage
-@synthesize controller = docController;
 
-- (void) open: (CDVInvokedUrlCommand*)command {
+- (void) getItem: (CDVInvokedUrlCommand*)command {
+
+   
+}
+
+- (void) setItem: (CDVInvokedUrlCommand*)command {
+
+   
+}
+
+- (void) removeItem: (CDVInvokedUrlCommand*)command {
+
+   
+}
+
+- (void) clear: (CDVInvokedUrlCommand*)command {
+
+   
+}
+
+- (void) clearIfInvalid: (CDVInvokedUrlCommand*)command {
 
    
 }

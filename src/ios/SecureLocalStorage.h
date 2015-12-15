@@ -23,12 +23,14 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #import <Cordova/CDV.h>
 
-@interface SecureLocalStorage : CDVPlugin <UIDocumentInteractionControllerDelegate> {
-    NSString *localFile;
+@interface SecureLocalStorage : CDVPlugin {
+    
 }
 
-@property(nonatomic, strong) UIDocumentInteractionController *controller;
-
-- (void) open: (CDVInvokedUrlCommand*)command;
+- (void) getItem: (CDVInvokedUrlCommand*)command;
+- (void) setItem: (CDVInvokedUrlCommand*)command;
+- (void) removeItem: (CDVInvokedUrlCommand*)command;
+- (void) clear: (CDVInvokedUrlCommand*)command;
+- (void) clearIfInvalid: (CDVInvokedUrlCommand*)command;
 
 @end
