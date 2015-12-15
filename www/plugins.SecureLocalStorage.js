@@ -1,6 +1,4 @@
-cordova.define("nl.afas.cordova.plugin.secureLocalStorage.SecureLocalStorage", function (require, exports, module) { /*jslint browser: true, devel: true, node: true, sloppy: true, plusplus: true*/
-    /*global require, cordova */
-    /*
+/*
 The MIT License (MIT)
 
 Copyright (c) 2015 Dick Verweij, dickydick1969@hotmail.com, AFAS Software  - d.verweij@afas.nl
@@ -22,39 +20,39 @@ COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
 IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */  
-    var exec = require('cordova/exec');
+var exec = require('cordova/exec');
 
-    function SecureLocalStorage() {
-        exec(null, null, 'SecureLocalStorage', 'clearIfInvalid', []);
-    }
+function SecureLocalStorage() {
+    exec(null, null, 'SecureLocalStorage', 'clearIfInvalid', []);
+}
 
 
-    SecureLocalStorage.prototype.getItem = function (key) {
-        return new Promise(function (resolve, reject) {
-            exec(resolve, reject, 'SecureLocalStorage', 'getItem', [key]);
-        });
+SecureLocalStorage.prototype.getItem = function (key) {
+    return new Promise(function (resolve, reject) {
+        exec(resolve, reject, 'SecureLocalStorage', 'getItem', [key]);
+    });
 
-    };
+};
 
-    SecureLocalStorage.prototype.setItem = function (key, value) {
-        return new Promise(function (resolve, reject) {
-            exec(resolve, reject, 'SecureLocalStorage', 'setItem', [key, value]);
-        });
-    };
+SecureLocalStorage.prototype.setItem = function (key, value) {
+    return new Promise(function (resolve, reject) {
+        exec(resolve, reject, 'SecureLocalStorage', 'setItem', [key, value]);
+    });
+};
 
-    SecureLocalStorage.prototype.removeItem = function (key) {
-        return new Promise(function (resolve, reject) {
-            exec(resolve, reject, 'SecureLocalStorage', 'removeItem', [key]);
-        });
-    };
+SecureLocalStorage.prototype.removeItem = function (key) {
+    return new Promise(function (resolve, reject) {
+        exec(resolve, reject, 'SecureLocalStorage', 'removeItem', [key]);
+    });
+};
 
-    SecureLocalStorage.prototype.clear = function () {
-        return new Promise(function (resolve, reject) {
-            exec(resolve, reject, 'SecureLocalStorage', 'clear', []);
+SecureLocalStorage.prototype.clear = function () {
+    return new Promise(function (resolve, reject) {
+        exec(resolve, reject, 'SecureLocalStorage', 'clear', []);
 
-        });
+    });
 
-    };
+};
 
-    cordova.SecureLocalStorage = new SecureLocalStorage();
-});
+cordova.SecureLocalStorage = new SecureLocalStorage();
+
