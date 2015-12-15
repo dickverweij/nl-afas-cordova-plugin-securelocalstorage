@@ -1,5 +1,4 @@
-cordova.define("nl.afas.cordova.plugin.secureLocalStorage.SecureLocalStorage", function (require, exports, module) {
-    /*jslint browser: true, devel: true, node: true, sloppy: true, plusplus: true*/
+cordova.define("nl.afas.cordova.plugin.secureLocalStorage.SecureLocalStorage", function (require, exports, module) { /*jslint browser: true, devel: true, node: true, sloppy: true, plusplus: true*/
     /*global require, cordova */
     /*
 The MIT License (MIT)
@@ -26,24 +25,36 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     var cordova = require('cordova');
     var exec = require('cordova/exec');
 
-    function SecureLocalStorage() { }
+    function SecureLocalStorage() {
+        exec(null, null, 'SecureLocalStorage', 'clearIfInvalid', []);
+    }
+
 
     SecureLocalStorage.prototype.getItem = function (key) {
         return new Promise(function (resolve, reject) {
             exec(resolve, reject, 'SecureLocalStorage', 'getItem', [key]);
         });
+
     };
 
     SecureLocalStorage.prototype.setItem = function (key, value) {
-        exec(null, null, 'SecureLocalStorage', 'setItem', [key, value]);
+        return new Promise(function (resolve, reject) {
+            exec(resolve, reject, 'SecureLocalStorage', 'setItem', [key, value]);
+        });
     };
 
     SecureLocalStorage.prototype.removeItem = function (key) {
-        exec(null, null, 'SecureLocalStorage', 'removeItem', [key]);
+        return new Promise(function (resolve, reject) {
+            exec(resolve, reject, 'SecureLocalStorage', 'removeItem', [key]);
+        });
     };
 
     SecureLocalStorage.prototype.clear = function () {
-        exec(null, null, 'SecureLocalStorage', 'clear', []);
+        return new Promise(function (resolve, reject) {
+            exec(resolve, reject, 'SecureLocalStorage', 'clear', []);
+
+        });
+
     };
 
     cordova.SecureLocalStorage = new SecureLocalStorage();
