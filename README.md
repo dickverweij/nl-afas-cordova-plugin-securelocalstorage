@@ -21,13 +21,13 @@ Requirements
 Usage
 ------
     
-    window.secureLocalStorage.setItem("key" , "value");
+    cordova.SecureLocalStorage.setItem("key" , "value");
 
-    vwindow.secureLocalStorage.getItem("key").then(function (value){...})
+    cordova.SecureLocalStorage.getItem("key").then(function (value){...})
 
-    window.secureLocalStorage.removeItem("key");
+    cordova.SecureLocalStorage.removeItem("key");
 
-    window.secureLocalStorage.clear();
+    cordova.SecureLocalStorage.clear();
 
 
 
