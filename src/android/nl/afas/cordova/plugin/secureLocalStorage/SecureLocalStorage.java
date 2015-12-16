@@ -275,7 +275,7 @@ public class SecureLocalStorage extends CordovaPlugin {
         }
     }
 
-    private void clear(File file, KeyStrore keyStore) throws SecureLocalStorageException {
+    private void clear(File file, KeyStore keyStore) throws SecureLocalStorageException {
         if (file.exists()) {
             if (!file.delete()) {
                 throw new SecureLocalStorageException("Could not delete storage file");
