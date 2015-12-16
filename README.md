@@ -1,12 +1,13 @@
 Secure localStorage for Cordova
 ==========================
 This plugin will store local data encrypted using IOS keychain or Android keystore.
+
 ANDROID: The local storage will have an expiration date of 3 years. If the encrypted file is invalid,
-the localstorage will clear itself.
+the localstorage will clear itself. A clear() will also re-initialize the certificate.
+
 
 WARNING: This is no protection for hackers who have physical/root access to your phone. 
 
-Goal: Protect against reading/writing the contents stored in the the SecureLocalStorage by other apps.
 Use it to store temporary sensitive data which will survice an app exit/shutdown. 
 
 Requirements

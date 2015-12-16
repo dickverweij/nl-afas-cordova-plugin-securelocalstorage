@@ -131,31 +131,27 @@ public class SecureLocalStorage extends CordovaPlugin {
                         // lock the access
                         lock.lock();
                         try {
+							KeyStore keyStore = initKeyStore();
+
                             // clear just deletes the storage file
                             if (action.equals("clear")) {
                                 foundMethod = true;
-                                clear(file);
+                                clear(file, keyStore);
+
                             } else {
 
                                 // clear localStorage if invalid
                                 if (action.equals("clearIfInvalid")) {
-                                    foundMethod = true;
-                                    KeyStore keyStore = initKeyStore();
+                                    foundMethod = true;                                   
                                     try {
                                         checkValidity();
                                         if (file.exists()) {
                                             readAndDecryptStorage(keyStore);
                                         }
                                     } catch (SecureLocalStorageException ex) {
-                                        clear(file);
-                                        try {
-                                            keyStore.deleteEntry(SECURELOCALSTORAGEALIAS);
-                                        } catch (KeyStoreException e) {
-                                        }
+                                        clear(file, keyStore);                                       
                                     }
-                                } else {
-                                    KeyStore keyStore = initKeyStore();
-
+                                } else {                                   
                                     // initialize for reading later
                                     if (!file.exists()) {
                                         // generate key and store in keyStore
@@ -279,11 +275,18 @@ public class SecureLocalStorage extends CordovaPlugin {
         }
     }
 
-    private void clear(File file) throws SecureLocalStorageException {
+    private void clear(File file, KeyStrore keyStore) throws SecureLocalStorageException {
         if (file.exists()) {
             if (!file.delete()) {
                 throw new SecureLocalStorageException("Could not delete storage file");
             }
+        }
+		try {
+			if (keyStore.containsAlias(SECURELOCALSTORAGEALIAS)) {
+                keyStore.deleteEntry(SECURELOCALSTORAGEALIAS);
+			}
+        } catch (KeyStoreException e) {
+		     throw new SecureLocalStorageException("Could not delete keystore alias");
         }
     }
 
