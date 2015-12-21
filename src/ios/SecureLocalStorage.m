@@ -29,28 +29,30 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 @implementation SecureLocalStorage
 
 - (void) getItem: (CDVInvokedUrlCommand*)command {
+	KeychainItemWrapper * wrapper = [[KeychainItemWrapper alloc] initWithIndentifier:@"nl.afas.cordova.secureLocalStorage" accessGroup: nil];
 
-   
+	CDVPluginResult * result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:@""];
+	[self.commandDelegate sendPluginResult:result callbackId: command.callbackId];
 }
 
 - (void) setItem: (CDVInvokedUrlCommand*)command {
-
-   
+	CDVPluginResult * result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+	[self.commandDelegate sendPluginResult:result callbackId: command.callbackId];
 }
 
 - (void) removeItem: (CDVInvokedUrlCommand*)command {
-
-   
+	CDVPluginResult * result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+	[self.commandDelegate sendPluginResult:result callbackId: command.callbackId];
 }
 
 - (void) clear: (CDVInvokedUrlCommand*)command {
-
-   
+	CDVPluginResult * result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+	[self.commandDelegate sendPluginResult:result callbackId: command.callbackId];
 }
 
 - (void) clearIfInvalid: (CDVInvokedUrlCommand*)command {
-
-   
+	CDVPluginResult * result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+	[self.commandDelegate sendPluginResult:result callbackId: command.callbackId];   
 }
 
 @end
