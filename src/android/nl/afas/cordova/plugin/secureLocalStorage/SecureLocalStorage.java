@@ -146,7 +146,12 @@ public class SecureLocalStorage extends CordovaPlugin {
                                     try {
                                         checkValidity();
                                         if (file.exists()) {
-                                            readAndDecryptStorage(keyStore);
+											// save hashmap for re-initializing certificate
+                                            hashMap = readAndDecryptStorage(keyStore);
+                                            clear(file, keyStore);
+                                            keyStore = initKeyStore();
+                                            generateKey(keyStore);
+                                            writeAndEncryptStorage(keyStore, hashMap);
                                         }
                                     } catch (SecureLocalStorageException ex) {
                                         clear(file, keyStore);                                       
