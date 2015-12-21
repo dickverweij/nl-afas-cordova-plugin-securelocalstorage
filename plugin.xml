@@ -36,6 +36,8 @@
         </config-file>
         <source-file src="src/ios/SecureLocalStorage.m" />
         <header-file src="src/ios/SecureLocalStorage.h" />
+	<source-file src="src/ios/KeychainItemWrapper.m" />
+        <header-file src="src/ios/KeychainItemWrapper.h" />
     </platform>
 	
 </plugin>
