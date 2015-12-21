@@ -28,31 +28,94 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 @implementation SecureLocalStorage
 
-- (void) getItem: (CDVInvokedUrlCommand*)command {
-	KeychainItemWrapper * wrapper = [[KeychainItemWrapper alloc] initWithIndentifier:@"nl.afas.cordova.secureLocalStorage" accessGroup: nil];
+- (void) writeToSecureStorage:(NSMutableDictionary*)dict{
 
-	CDVPluginResult * result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:@""];
-	[self.commandDelegate sendPluginResult:result callbackId: command.callbackId];
+    KeychainItemWrapper * keychain = [[KeychainItemWrapper alloc] initWithIdentifier:@"nl.afas.cordova.plugin.secureLocalStorage" accessGroup:nil];
+    NSError *error;
+    NSData *jsonData = [NSJSONSerialization dataWithJSONObject:dict options:NSJSONWritingPrettyPrinted error:&error];
+    NSString *jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding]; 
+
+    [keychain setObject:jsonString forKey:(__bridge id)(kSecValueData)];
+
+}
+
+- (NSMutableDictionary *) readFromSecureStorage {
+
+    NSMutableDictionary * dict = nil;
+    KeychainItemWrapper * keychain = [[KeychainItemWrapper alloc] initWithIdentifier:@"nl.afas.cordova.plugin.secureLocalStorage" accessGroup:nil];    
+    NSError *error;
+    @try{
+        NSData *json = [keychain objectForKey:(__bridge id)(kSecValueData)];
+
+        if (json != nil) {
+            dict = [NSJSONSerialization JSONObjectWithData:json options: NSJSONReadingMutableContainers error:&error];
+            if (error) {
+                NSLog(@"%@", error);
+            }
+        }
+    }
+    @catch(NSException * exception)
+    {
+        NSLog(@"Exception: %@", exception);
+    }
+
+    return dict;
+}
+
+- (void) getItem: (CDVInvokedUrlCommand*)command {
+	NSMutableDictionary * dict = [self readFromSecureStorage];
+    CDVPluginResult * pluginResult;
+    NSString * result = nil;
+
+    if (dict != nil) {
+        result =[dict valueForKey:command.arguments[0]];
+    }
+
+    pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:result];
+    [self.commandDelegate sendPluginResult:pluginResult callbackId: command.callbackId];
+
 }
 
 - (void) setItem: (CDVInvokedUrlCommand*)command {
+    NSMutableDictionary * dict = [self readFromSecureStorage];
+    [dict setValue:command.arguments[1] forKey:command.arguments[0]];
+
+    [self writeToSecureStorage:dict];
 	CDVPluginResult * result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
 	[self.commandDelegate sendPluginResult:result callbackId: command.callbackId];
+
 }
 
 - (void) removeItem: (CDVInvokedUrlCommand*)command {
-	CDVPluginResult * result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+    NSMutableDictionary * dict = [self readFromSecureStorage];
+    [dict removeObjectForKey:command.arguments[0]];
+    [self writeToSecureStorage:dict];
+	 
+    CDVPluginResult * result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
 	[self.commandDelegate sendPluginResult:result callbackId: command.callbackId];
+
 }
 
 - (void) clear: (CDVInvokedUrlCommand*)command {
-	CDVPluginResult * result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
-	[self.commandDelegate sendPluginResult:result callbackId: command.callbackId];
+    NSMutableDictionary * dict = [NSMutableDictionary new];
+    [self writeToSecureStorage:dict];
+
+    CDVPluginResult * result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+    [self.commandDelegate sendPluginResult:result callbackId: command.callbackId];
+
 }
 
 - (void) clearIfInvalid: (CDVInvokedUrlCommand*)command {
-	CDVPluginResult * result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
-	[self.commandDelegate sendPluginResult:result callbackId: command.callbackId];   
+    NSMutableDictionary * dict = [self readFromSecureStorage];
+
+    if (dict == nil) {
+        dict = [NSMutableDictionary new];
+        [self writeToSecureStorage:dict];
+    }
+
+    CDVPluginResult * result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+    [self.commandDelegate sendPluginResult:result callbackId: command.callbackId];   
+
 }
 
 @end
