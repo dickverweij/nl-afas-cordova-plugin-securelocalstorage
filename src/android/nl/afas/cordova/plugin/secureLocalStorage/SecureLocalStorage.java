@@ -146,12 +146,15 @@ public class SecureLocalStorage extends CordovaPlugin {
                                     try {
                                         checkValidity();
                                         if (file.exists()) {
-											// save hashmap for re-initializing certificate
+                                            // save hashmap for re-initializing certificate
                                             hashMap = readAndDecryptStorage(keyStore);
                                             clear(file, keyStore);
+
+
                                             keyStore = initKeyStore();
                                             generateKey(keyStore);
                                             writeAndEncryptStorage(keyStore, hashMap);
+
                                         }
                                     } catch (SecureLocalStorageException ex) {
                                         clear(file, keyStore);                                       
@@ -320,10 +323,9 @@ public class SecureLocalStorage extends CordovaPlugin {
         FileInputStream fis = _cordova.getActivity().openFileInput(SECURELOCALSTORAGEKEY);
         ArrayList<Byte> values = new ArrayList<Byte>();
         try {
-            RSAPrivateKey privateKey = (RSAPrivateKey) privateKeyEntry.getPrivateKey();
 
-            Cipher output = Cipher.getInstance("RSA/ECB/PKCS1Padding", "AndroidOpenSSL");
-            output.init(Cipher.DECRYPT_MODE, privateKey);
+            Cipher output = Cipher.getInstance("RSA/ECB/PKCS1Padding");
+            output.init(Cipher.DECRYPT_MODE, privateKeyEntry.getPrivateKey());
 
             CipherInputStream cipherInputStream = new CipherInputStream(
                     fis, output);
@@ -376,10 +378,9 @@ public class SecureLocalStorage extends CordovaPlugin {
 
             // store key encrypted with keystore key pair
             KeyStore.PrivateKeyEntry privateKeyEntry = (KeyStore.PrivateKeyEntry) keyStore.getEntry(SECURELOCALSTORAGEALIAS, null);
-            RSAPublicKey publicKey = (RSAPublicKey) privateKeyEntry.getCertificate().getPublicKey();
 
-            Cipher input = Cipher.getInstance("RSA/ECB/PKCS1Padding", "AndroidOpenSSL");
-            input.init(Cipher.ENCRYPT_MODE, publicKey);
+            Cipher input = Cipher.getInstance("RSA/ECB/PKCS1Padding");
+            input.init(Cipher.ENCRYPT_MODE, privateKeyEntry.getCertificate().getPublicKey());
 
             FileOutputStream fos = _cordova.getActivity().openFileOutput(SECURELOCALSTORAGEKEY, Context.MODE_PRIVATE);
             try {
@@ -403,8 +404,6 @@ public class SecureLocalStorage extends CordovaPlugin {
         } catch (NoSuchAlgorithmException e) {
             throw new SecureLocalStorageException("Error generating key", e);
         } catch (KeyStoreException e) {
-            throw new SecureLocalStorageException("Error generating key", e);
-        } catch (NoSuchProviderException e) {
             throw new SecureLocalStorageException("Error generating key", e);
         } catch (UnrecoverableEntryException e) {
             throw new SecureLocalStorageException("Error generating key", e);
