@@ -1,0 +1,33 @@
+{
+  "name": "nl-afas-cordova-plugin-securelocalstorage",
+  "version": "0.0.1",
+  "description": "Secure localStorage. This plugin will store local data encrypted using the IOS keychain or the Android keystore. Use it to store temporary sensitive data which has to survive an app exit/shutdown.",
+  "cordova": {
+    "id": "nl-afas-cordova-plugin-securelocalstorage",
+    "platforms": [
+      "android",
+      "ios"
+    ]
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dickverweij/nl-afas-cordova-plugin-secureLocalStorage.git"
+  },
+  "keywords": [
+    "ecosystem:cordova",
+    "cordova-android",
+    "cordova-ios"
+  ],
+  "engines": [
+    {
+      "name": "cordova",
+      "version": ">=3.0.0"
+    }
+  ],
+  "author": "Dick Verweij",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/dickverweij/nl-afas-cordova-plugin-secureLocalStorage/issues"
+  },
+  "homepage": "https://github.com/dickverweij/nl-afas-cordova-plugin-secureLocalStorage#readme"
+}
