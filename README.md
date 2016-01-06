@@ -16,7 +16,7 @@ Requirements
 
     Installation
 -------------
-    cordova plugin add https://github.com/dickverweij/nl-afas-cordova-plugin-secureLocalStorage
+    cordova plugin add nl-afas-cordova-plugin-securelocalstorage
 
 Usage
 ------
