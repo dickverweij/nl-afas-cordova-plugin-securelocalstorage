@@ -54,5 +54,10 @@ SecureLocalStorage.prototype.clear = function () {
 
 };
 
-cordova.SecureLocalStorage = new SecureLocalStorage();
+if(typeof (cordova.plugins) == 'undefined')
+{
+    cordova.plugins = {};
+}
+
+cordova.plugins.SecureLocalStorage = new SecureLocalStorage();
 
