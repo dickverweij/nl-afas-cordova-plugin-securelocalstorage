@@ -23,35 +23,91 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 var exec = require('cordova/exec');
 
 function SecureLocalStorage() {
-    exec(null, null, 'SecureLocalStorage', 'clearIfInvalid', []);
+    var self = this;
+    this.initialized = false;    
+    this.initQueue = [];
+
+    exec(initialized, null, 'SecureLocalStorage', 'clearIfInvalid', []);
+
+    function initialized() {
+        self.initialized = true;
+        for (var f; f = self.initQueue.shift() ;){
+            f();
+        }
+    }    
 }
 
 
 SecureLocalStorage.prototype.getItem = function (key) {
+    var self = this;
     return new Promise(function (resolve, reject) {
-        exec(resolve, reject, 'SecureLocalStorage', 'getItem', [key]);
+        if (self.initialized) {
+            getItem(key,resolve,reject);
+        }
+        else {
+            self.initQueue.push(function () {
+                getItem(key, resolve, reject);
+            });
+        }
     });
-
+    
+    function getItem(key, resolve, reject) {
+        exec(resolve, reject, 'SecureLocalStorage', 'getItem', [key]);
+    }
 };
 
 SecureLocalStorage.prototype.setItem = function (key, value) {
+    var self = this;
     return new Promise(function (resolve, reject) {
-        exec(resolve, reject, 'SecureLocalStorage', 'setItem', [key, value]);
+        if (self.initialized) {
+            setItem(key, value, resolve, reject);
+        }
+        else {
+            self.initQueue.push(function () {
+                setItem(key, value, resolve, reject);
+            });
+        }
     });
+
+    function setItem(key, value, resolve, reject) {
+        exec(resolve, reject, 'SecureLocalStorage', 'setItem', [key, value]);
+    }
 };
 
 SecureLocalStorage.prototype.removeItem = function (key) {
-    return new Promise(function (resolve, reject) {
-        exec(resolve, reject, 'SecureLocalStorage', 'removeItem', [key]);
+    var self = this;
+    return new Promise(function (resolve, reject) {        
+        if (self.initialized) {
+            removeItem(key, resolve, reject);
+        }
+        else {
+            self.initQueue.push(function () {
+                removeItem(key, resolve, reject);
+            });
+        }
     });
+
+    function removeItem(key, resolve, reject) {
+        exec(resolve, reject, 'SecureLocalStorage', 'removeItem', [key]);
+    }
 };
 
 SecureLocalStorage.prototype.clear = function () {
+    var self = this;
     return new Promise(function (resolve, reject) {
-        exec(resolve, reject, 'SecureLocalStorage', 'clear', []);
-
+        if (self.initialized) {
+            clear(resolve, reject);
+        }
+        else {
+            self.initQueue.push(function () {
+                clear(resolve, reject);
+            });
+        }
     });
 
+    function clear(resolve, reject) {
+        exec(resolve, reject, 'SecureLocalStorage', 'clear', []);
+    }
 };
 
 module.exports = new SecureLocalStorage();
