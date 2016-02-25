@@ -64,59 +64,74 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 }
 
 - (void) getItem: (CDVInvokedUrlCommand*)command {
-	NSMutableDictionary * dict = [self readFromSecureStorage];
-    CDVPluginResult * pluginResult;
-    NSString * result = nil;
+	[self.commandDelegate runInBackground:^{
+		@synchronized(self) {
+			NSMutableDictionary * dict = [self readFromSecureStorage];
+			CDVPluginResult * pluginResult;
+			NSString * result = nil;
 
-    if (dict != nil) {
-        result =[dict valueForKey:command.arguments[0]];
-    }
+			if (dict != nil) {
+				result =[dict valueForKey:command.arguments[0]];
+			}
 
-    pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:result];
-    [self.commandDelegate sendPluginResult:pluginResult callbackId: command.callbackId];
-
+			pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:result];
+			[self.commandDelegate sendPluginResult:pluginResult callbackId: command.callbackId];
+		}
+	}];
 }
 
 - (void) setItem: (CDVInvokedUrlCommand*)command {
-    NSMutableDictionary * dict = [self readFromSecureStorage];
-    [dict setValue:command.arguments[1] forKey:command.arguments[0]];
+	[self.commandDelegate runInBackground:^{
+		@synchronized(self) {
+			NSMutableDictionary * dict = [self readFromSecureStorage];
+			[dict setValue:command.arguments[1] forKey:command.arguments[0]];
 
-    [self writeToSecureStorage:dict];
-	CDVPluginResult * result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
-	[self.commandDelegate sendPluginResult:result callbackId: command.callbackId];
-
+			[self writeToSecureStorage:dict];
+			CDVPluginResult * result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+			[self.commandDelegate sendPluginResult:result callbackId: command.callbackId];
+		}
+	}];
 }
 
 - (void) removeItem: (CDVInvokedUrlCommand*)command {
-    NSMutableDictionary * dict = [self readFromSecureStorage];
-    [dict removeObjectForKey:command.arguments[0]];
-    [self writeToSecureStorage:dict];
+	[self.commandDelegate runInBackground:^{
+		@synchronized(self) {
+			NSMutableDictionary * dict = [self readFromSecureStorage];
+			[dict removeObjectForKey:command.arguments[0]];
+			[self writeToSecureStorage:dict];
 	 
-    CDVPluginResult * result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
-	[self.commandDelegate sendPluginResult:result callbackId: command.callbackId];
-
+			CDVPluginResult * result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+			[self.commandDelegate sendPluginResult:result callbackId: command.callbackId];
+		}
+	}];
 }
 
 - (void) clear: (CDVInvokedUrlCommand*)command {
-    NSMutableDictionary * dict = [NSMutableDictionary new];
-    [self writeToSecureStorage:dict];
+	[self.commandDelegate runInBackground:^{
+		@synchronized(self) {
+			NSMutableDictionary * dict = [NSMutableDictionary new];
+			[self writeToSecureStorage:dict];
 
-    CDVPluginResult * result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
-    [self.commandDelegate sendPluginResult:result callbackId: command.callbackId];
-
+			CDVPluginResult * result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+			[self.commandDelegate sendPluginResult:result callbackId: command.callbackId];
+		}
+	}];
 }
 
 - (void) clearIfInvalid: (CDVInvokedUrlCommand*)command {
-    NSMutableDictionary * dict = [self readFromSecureStorage];
+	[self.commandDelegate runInBackground:^{
+		@synchronized(self) {
+			NSMutableDictionary * dict = [self readFromSecureStorage];
 
-    if (dict == nil) {
-        dict = [NSMutableDictionary new];
-        [self writeToSecureStorage:dict];
-    }
+			if (dict == nil) {
+				dict = [NSMutableDictionary new];
+				[self writeToSecureStorage:dict];
+			}
 
-    CDVPluginResult * result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
-    [self.commandDelegate sendPluginResult:result callbackId: command.callbackId];   
-
+			CDVPluginResult * result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+			[self.commandDelegate sendPluginResult:result callbackId: command.callbackId];   
+		}
+	}];
 }
 
 @end
