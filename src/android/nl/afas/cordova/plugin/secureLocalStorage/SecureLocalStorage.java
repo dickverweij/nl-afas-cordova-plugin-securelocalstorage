@@ -83,9 +83,19 @@ import org.json.JSONException;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class SecureLocalStorage extends CordovaPlugin {
+
+    public enum ActionId {
+        ACTION_NONE,
+        ACTION_CLEARIFINVALID,
+        ACTION_CLEAR,
+        ACTION_GETITEM,
+        ACTION_SETITEM,
+        ACTION_REMOVEITEM
+    }
 
     public class SecureLocalStorageException extends Exception{
         public SecureLocalStorageException(String message){
@@ -114,131 +124,154 @@ public class SecureLocalStorage extends CordovaPlugin {
     @Override
     public boolean execute(final String action, final JSONArray args, final CallbackContext callbackContext) throws JSONException {
 
-        // start thread
-        try {
-            return _cordova.getThreadPool().submit(new Callable<Boolean>() {
-                @Override
-                public Boolean call() throws JSONException {
-                    boolean foundMethod = false;
-                    try {
-                        if (Build.VERSION.SDK_INT < 18) {
-                            throw new SecureLocalStorageException("Invalid API Level (must be >= 18");
-                        }
 
-                        File file = _cordova.getActivity().getBaseContext().getFileStreamPath(SECURELOCALSTORAGEFILE);
-                        HashMap<String, String> hashMap = new HashMap<String, String>();
-
-                        // lock the access
-                        lock.lock();
-                        try {
-							KeyStore keyStore = initKeyStore();
-
-                            // clear just deletes the storage file
-                            if (action.equals("clear")) {
-                                foundMethod = true;
-                                clear(file, keyStore);
-
-                            } else {
-
-                                // clear localStorage if invalid
-                                if (action.equals("clearIfInvalid")) {
-                                    foundMethod = true;                                   
-                                    try {
-                                        checkValidity();
-                                        if (file.exists()) {
-                                            // save hashmap for re-initializing certificate
-                                            hashMap = readAndDecryptStorage(keyStore);
-                                            clear(file, keyStore);
-
-
-                                            keyStore = initKeyStore();
-                                            generateKey(keyStore);
-                                            writeAndEncryptStorage(keyStore, hashMap);
-
-                                        }
-                                    } catch (SecureLocalStorageException ex) {
-                                        clear(file, keyStore);                                       
-                                    }
-                                } else {                                   
-                                    // initialize for reading later
-                                    if (!file.exists()) {
-                                        // generate key and store in keyStore
-                                        generateKey(keyStore);
-
-                                        writeAndEncryptStorage(keyStore, hashMap);
-                                    }
-
-                                    // read current storage hashmap
-                                    hashMap = readAndDecryptStorage(keyStore);
-
-
-                                    String key = args.getString(0);
-
-                                    if (key == null || key.length() == 0) {
-                                        throw new SecureLocalStorageException("Key is empty or null");
-                                    }
-                                    // handle the methods. Note: getItem uses callback
-                                    if (action.equals("getItem")) {
-                                        foundMethod = true;
-
-                                        if (hashMap.containsKey(key)) {
-                                            if (callbackContext != null) {
-                                                String value = hashMap.get(key);
-
-                                                callbackContext.success(value);
-                                            }
-                                        } else {
-                                            // return null when not found
-                                            callbackContext.success((String) null);
-                                        }
-                                    } else if (action.equals("setItem")) {
-                                        foundMethod = true;
-
-                                        String value = args.getString(1);
-                                        if (value == null) {
-                                            throw new SecureLocalStorageException("Value is null");
-                                        }
-
-                                        hashMap.put(key, value);
-
-                                        // store back
-                                        writeAndEncryptStorage(keyStore, hashMap);
-
-                                    } else if (action.equals("removeItem")) {
-                                        foundMethod = true;
-
-                                        hashMap.remove(key);
-
-                                        // store back
-                                        writeAndEncryptStorage(keyStore, hashMap);
-                                    }
-                                }
-                            }
-
-                        } finally {
-                            lock.unlock();
-                        }
-
-                    } catch (SecureLocalStorageException ex) {
-
-                        ex.printStackTrace();
-
-                        StringWriter sw = new StringWriter();
-                        PrintWriter pw = new PrintWriter(sw);
-                        ex.printStackTrace(pw);
-                        pw.close();
-
-                        throw new JSONException(sw.toString());
-                    }
-
-                    return foundMethod;
-                }
-            }).get();
-        } catch (InterruptedException e) {
-        } catch (ExecutionException e) {
+        final ActionId actionId = getActionId(action);
+        if (actionId == ActionId.ACTION_NONE) {
+            return false;
         }
 
-        return false;
+        // start thread
+        _cordova.getThreadPool().execute(new Runnable() {
+            @Override
+            public void run() {
+
+                try {
+                    handleAction(actionId, args, callbackContext);
+                } catch (SecureLocalStorageException ex) {
+                    handleException(ex, callbackContext);
+                } catch (JSONException ex) {
+                    handleException(ex, callbackContext);
+                }
+            }
+        });
+
+        return true;
+    }
+
+    private void handleException(Exception ex, CallbackContext callbackContext) {
+
+        ex.printStackTrace();
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw);
+        ex.printStackTrace(pw);
+        pw.close();
+        callbackContext.error(pw.toString());
+    }
+
+    private void handleAction(ActionId actionId, JSONArray args, CallbackContext callbackContext) throws SecureLocalStorageException, JSONException {
+        if (Build.VERSION.SDK_INT < 18) {
+            throw new SecureLocalStorageException("Invalid API Level (must be >= 18");
+        }
+
+        File file = _cordova.getActivity().getBaseContext().getFileStreamPath(SECURELOCALSTORAGEFILE);
+        HashMap<String, String> hashMap = new HashMap<String, String>();
+
+        // lock the access
+        lock.lock();
+        try {
+            KeyStore keyStore = initKeyStore();
+
+            // clear just deletes the storage file
+            if (actionId == ActionId.ACTION_CLEAR) {
+                clear(file, keyStore);
+
+            } else {
+
+                // clear localStorage if invalid
+                if (actionId == ActionId.ACTION_CLEARIFINVALID) {
+
+                    try {
+                        checkValidity();
+                        if (file.exists()) {
+                            // save hashmap for re-initializing certificate
+                            hashMap = readAndDecryptStorage(keyStore);
+                            clear(file, keyStore);
+
+
+                            keyStore = initKeyStore();
+                            generateKey(keyStore);
+                            writeAndEncryptStorage(keyStore, hashMap);
+
+                        }
+                    } catch (SecureLocalStorageException ex) {
+                        clear(file, keyStore);
+                    }
+                } else {
+                    // initialize for reading later
+                    if (!file.exists()) {
+                        // generate key and store in keyStore
+                        generateKey(keyStore);
+
+                        writeAndEncryptStorage(keyStore, hashMap);
+                    }
+
+                    // read current storage hashmap
+                    hashMap = readAndDecryptStorage(keyStore);
+
+                    String key = args.getString(0);
+
+                    if (key == null || key.length() == 0) {
+                        throw new SecureLocalStorageException("Key is empty or null");
+                    }
+                    // handle the methods. Note: getItem uses callback
+                    if (actionId == ActionId.ACTION_GETITEM) {
+
+
+                        if (hashMap.containsKey(key)) {
+                            if (callbackContext != null) {
+                                String value = hashMap.get(key);
+
+                                callbackContext.success(value);
+                            }
+                        } else {
+                            // return null when not found
+                            callbackContext.success((String) null);
+                        }
+                    } else if (actionId == ActionId.ACTION_SETITEM) {
+
+                        String value = args.getString(1);
+                        if (value == null) {
+                            throw new SecureLocalStorageException("Value is null");
+                        }
+
+                        hashMap.put(key, value);
+
+                        // store back
+                        writeAndEncryptStorage(keyStore, hashMap);
+
+                    } else if (actionId == ActionId.ACTION_REMOVEITEM) {
+
+                        hashMap.remove(key);
+
+                        // store back
+                        writeAndEncryptStorage(keyStore, hashMap);
+                    }
+                }
+            }
+
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    private ActionId getActionId(final String action)
+    {
+        if (action.equals("clear")){
+            return ActionId.ACTION_CLEAR;
+        }
+        if (action.equals("getItem")){
+            return ActionId.ACTION_GETITEM;
+        }
+        if (action.equals("clear")){
+            return ActionId.ACTION_SETITEM;
+        }
+        if (action.equals("clear")){
+            return ActionId.ACTION_REMOVEITEM;
+        }
+        if (action.equals("clearIfInvalid")){
+            return ActionId.ACTION_CLEARIFINVALID;
+        }
+        return ActionId.ACTION_NONE;
     }
 
     @TargetApi(18)
