@@ -24,17 +24,32 @@ var exec = require('cordova/exec');
 
 function SecureLocalStorage() {
     var self = this;
-    this.initialized = false;    
+
+    // the plugin initializes async so some initialization handling is needed
+    this.initialized = false;
+    this.fallbackActive = false;
     this.initQueue = [];
 
-    exec(initialized, null, 'SecureLocalStorage', 'clearIfInvalid', []);
+    exec(initialized, error, 'SecureLocalStorage', 'clearIfInvalid', []);
 
     function initialized() {
         self.initialized = true;
         for (var f; f = self.initQueue.shift() ;){
             f();
         }
-    }    
+    }
+
+    // fallback to localStorage on a error(not encrypted local storage)
+    // needed for rooted devices..
+    function error()
+    {
+        self.initialized = true;
+        self.fallback = true;
+
+        for (var f; f = self.initQueue.shift() ;) {
+            f();
+        }
+    }
 }
 
 
@@ -52,7 +67,14 @@ SecureLocalStorage.prototype.getItem = function (key) {
     });
     
     function getItem(key, resolve, reject) {
-        exec(resolve, reject, 'SecureLocalStorage', 'getItem', [key]);
+        if(self.fallbackActive)
+        {
+            resolve(localStorage.getItem(key));
+        }
+        else
+        {
+            exec(resolve, reject, 'SecureLocalStorage', 'getItem', [key]);
+        }
     }
 };
 
@@ -70,7 +92,15 @@ SecureLocalStorage.prototype.setItem = function (key, value) {
     });
 
     function setItem(key, value, resolve, reject) {
-        exec(resolve, reject, 'SecureLocalStorage', 'setItem', [key, value]);
+        if(self.fallbackActive)
+        {
+            localStorage.setItem(key, value);
+            resolve();
+        }
+        else
+        {
+            exec(resolve, reject, 'SecureLocalStorage', 'setItem', [key, value]);
+        }
     }
 };
 
@@ -88,7 +118,15 @@ SecureLocalStorage.prototype.removeItem = function (key) {
     });
 
     function removeItem(key, resolve, reject) {
-        exec(resolve, reject, 'SecureLocalStorage', 'removeItem', [key]);
+        if(self.fallbackActive)
+        {
+            localStorage.removeItem(key);
+            resolve();
+        }
+        else
+        {
+            exec(resolve, reject, 'SecureLocalStorage', 'removeItem', [key]);
+        }
     }
 };
 
@@ -105,8 +143,17 @@ SecureLocalStorage.prototype.clear = function () {
         }
     });
 
-    function clear(resolve, reject) {
-        exec(resolve, reject, 'SecureLocalStorage', 'clear', []);
+    function clear(resolve, reject)
+    {
+        if(self.fallbackActive)
+        {
+            localStorage.clear();
+            resolve();
+        }
+        else
+        {
+            exec(resolve, reject, 'SecureLocalStorage', 'clear', []);
+        }
     }
 };
 

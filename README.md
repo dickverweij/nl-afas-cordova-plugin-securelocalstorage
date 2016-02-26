@@ -6,6 +6,7 @@ ANDROID: The local storage will have an expiration date of 3 years if left untou
 the localstorage will clear itself. A clear() will also re-initialize the certificate.
 
 WARNING: This is no protection for hackers who have physical/root access to your phone. 
+WARNING: If key generation encounters an error (on some rooted android devices), the plugin falls back to NON encrypted localstorage
 
 Use it to store temporary sensitive data which has to survive an app exit/shutdown. 
 
