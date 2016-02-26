@@ -43,8 +43,9 @@ function SecureLocalStorage() {
     // needed for rooted devices..
     function error()
     {
+        console.log("falling back to insecure localStorage")
         self.initialized = true;
-        self.fallback = true;
+        self.fallbackActive = true;
 
         for (var f; f = self.initQueue.shift() ;) {
             f();
