@@ -64,7 +64,11 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 }
 
 - (void) getItem: (CDVInvokedUrlCommand*)command {
-	[self.commandDelegate runInBackground:^{
+    CDVPluginResult * pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_NO_RESULT];
+    [pluginResult setKeepCallback: [NSNumber numberWithBool:YES]];
+    [self.commandDelegate sendPluginResult:pluginResult callbackId: command.callbackId];
+    
+    [self.commandDelegate runInBackground:^{
 		@synchronized(self) {
 			NSMutableDictionary * dict = [self readFromSecureStorage];
 			CDVPluginResult * pluginResult;
@@ -75,51 +79,73 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			}
 
 			pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:result];
-			[self.commandDelegate sendPluginResult:pluginResult callbackId: command.callbackId];
+            [pluginResult setKeepCallback: [NSNumber numberWithBool:NO]];
+            [self.commandDelegate sendPluginResult:pluginResult callbackId: command.callbackId];
 		}
 	}];
 }
 
 - (void) setItem: (CDVInvokedUrlCommand*)command {
-	[self.commandDelegate runInBackground:^{
+    CDVPluginResult * pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_NO_RESULT];
+    [pluginResult setKeepCallback: [NSNumber numberWithBool:YES]];
+    [self.commandDelegate sendPluginResult:pluginResult callbackId: command.callbackId];
+    
+    [self.commandDelegate runInBackground:^{
 		@synchronized(self) {
 			NSMutableDictionary * dict = [self readFromSecureStorage];
 			[dict setValue:command.arguments[1] forKey:command.arguments[0]];
 
 			[self writeToSecureStorage:dict];
-			CDVPluginResult * result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
-			[self.commandDelegate sendPluginResult:result callbackId: command.callbackId];
+			CDVPluginResult * pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+            [pluginResult setKeepCallback: [NSNumber numberWithBool:NO]];
+            [self.commandDelegate sendPluginResult:pluginResult callbackId: command.callbackId];
 		}
 	}];
 }
 
 - (void) removeItem: (CDVInvokedUrlCommand*)command {
-	[self.commandDelegate runInBackground:^{
+    CDVPluginResult * pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_NO_RESULT];
+    [pluginResult setKeepCallback: [NSNumber numberWithBool:YES]];
+    [self.commandDelegate sendPluginResult:pluginResult callbackId: command.callbackId];
+    
+    [self.commandDelegate runInBackground:^{
 		@synchronized(self) {
 			NSMutableDictionary * dict = [self readFromSecureStorage];
 			[dict removeObjectForKey:command.arguments[0]];
 			[self writeToSecureStorage:dict];
 	 
-			CDVPluginResult * result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
-			[self.commandDelegate sendPluginResult:result callbackId: command.callbackId];
+			CDVPluginResult * pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+            [pluginResult setKeepCallback: [NSNumber numberWithBool:NO]];
+            
+			[self.commandDelegate sendPluginResult:pluginResult callbackId: command.callbackId];
 		}
 	}];
 }
 
 - (void) clear: (CDVInvokedUrlCommand*)command {
-	[self.commandDelegate runInBackground:^{
+    CDVPluginResult * pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_NO_RESULT];
+    [pluginResult setKeepCallback: [NSNumber numberWithBool:YES]];
+    [self.commandDelegate sendPluginResult:pluginResult callbackId: command.callbackId];
+    
+    [self.commandDelegate runInBackground:^{
 		@synchronized(self) {
 			NSMutableDictionary * dict = [NSMutableDictionary new];
 			[self writeToSecureStorage:dict];
 
-			CDVPluginResult * result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
-			[self.commandDelegate sendPluginResult:result callbackId: command.callbackId];
+			CDVPluginResult * pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+            [pluginResult setKeepCallback: [NSNumber numberWithBool:NO]];
+            
+			[self.commandDelegate sendPluginResult:pluginResult callbackId: command.callbackId];
 		}
 	}];
 }
 
 - (void) clearIfInvalid: (CDVInvokedUrlCommand*)command {
-	[self.commandDelegate runInBackground:^{
+    CDVPluginResult * pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_NO_RESULT];
+    [pluginResult setKeepCallback: [NSNumber numberWithBool:YES]];
+    [self.commandDelegate sendPluginResult:pluginResult callbackId: command.callbackId];
+    
+    [self.commandDelegate runInBackground:^{
 		@synchronized(self) {
 			NSMutableDictionary * dict = [self readFromSecureStorage];
 
@@ -128,8 +154,10 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				[self writeToSecureStorage:dict];
 			}
 
-			CDVPluginResult * result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
-			[self.commandDelegate sendPluginResult:result callbackId: command.callbackId];   
+			CDVPluginResult * pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+            [pluginResult setKeepCallback: [NSNumber numberWithBool:NO]];
+            
+			[self.commandDelegate sendPluginResult:pluginResult callbackId: command.callbackId];
 		}
 	}];
 }
