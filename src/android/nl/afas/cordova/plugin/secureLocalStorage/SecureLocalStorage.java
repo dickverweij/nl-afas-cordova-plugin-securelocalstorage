@@ -287,7 +287,7 @@ public class SecureLocalStorage extends CordovaPlugin {
         if (action.equals("getItem")){
             return ActionId.ACTION_GETITEM;
         }
-        if (action.equals("clear")){
+        if (action.equals("setItem")){
             return ActionId.ACTION_SETITEM;
         }
         if (action.equals("clear")){
