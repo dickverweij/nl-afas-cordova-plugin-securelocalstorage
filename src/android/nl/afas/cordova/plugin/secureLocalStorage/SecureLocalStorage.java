@@ -25,6 +25,7 @@ package nl.afas.cordova.plugin.secureLocalStorage;
 import java.io.File;
 
 
+import org.apache.cordova.PluginResult;
 import org.json.JSONArray;
 
 import android.annotation.TargetApi;
@@ -130,6 +131,10 @@ public class SecureLocalStorage extends CordovaPlugin {
             return false;
         }
 
+        PluginResult pluginResult = new PluginResult(PluginResult.Status.NO_RESULT);
+        pluginResult.setKeepCallback(true);
+        callbackContext.sendPluginResult(pluginResult);
+
         // start thread
         _cordova.getThreadPool().execute(new Runnable() {
             @Override
@@ -155,7 +160,10 @@ public class SecureLocalStorage extends CordovaPlugin {
         PrintWriter pw = new PrintWriter(sw);
         ex.printStackTrace(pw);
         pw.close();
-        callbackContext.error(pw.toString());
+
+        PluginResult pluginResult = new PluginResult(PluginResult.Status.ERROR,pw.toString());
+        pluginResult.setKeepCallback(false);
+        callbackContext.sendPluginResult(pluginResult);
     }
 
     private void handleAction(ActionId actionId, JSONArray args, CallbackContext callbackContext) throws SecureLocalStorageException, JSONException {
@@ -174,7 +182,9 @@ public class SecureLocalStorage extends CordovaPlugin {
             // clear just deletes the storage file
             if (actionId == ActionId.ACTION_CLEAR) {
                 clear(file, keyStore);
-
+                PluginResult pluginResult = new PluginResult(PluginResult.Status.OK);
+                pluginResult.setKeepCallback(false);
+                callbackContext.sendPluginResult(pluginResult);
             } else {
 
                 // clear localStorage if invalid
@@ -196,6 +206,9 @@ public class SecureLocalStorage extends CordovaPlugin {
                     } catch (SecureLocalStorageException ex) {
                         clear(file, keyStore);
                     }
+                    PluginResult pluginResult = new PluginResult(PluginResult.Status.OK);
+                    pluginResult.setKeepCallback(false);
+                    callbackContext.sendPluginResult(pluginResult);
                 } else {
                     // initialize for reading later
                     if (!file.exists()) {
@@ -221,11 +234,15 @@ public class SecureLocalStorage extends CordovaPlugin {
                             if (callbackContext != null) {
                                 String value = hashMap.get(key);
 
-                                callbackContext.success(value);
+                                PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, value);
+                                pluginResult.setKeepCallback(false);
+                                callbackContext.sendPluginResult(pluginResult);
                             }
                         } else {
                             // return null when not found
-                            callbackContext.success((String) null);
+                            PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, (String)null);
+                            pluginResult.setKeepCallback(false);
+                            callbackContext.sendPluginResult(pluginResult);
                         }
                     } else if (actionId == ActionId.ACTION_SETITEM) {
 
@@ -239,12 +256,20 @@ public class SecureLocalStorage extends CordovaPlugin {
                         // store back
                         writeAndEncryptStorage(keyStore, hashMap);
 
+                        PluginResult pluginResult = new PluginResult(PluginResult.Status.OK);
+                        pluginResult.setKeepCallback(false);
+                        callbackContext.sendPluginResult(pluginResult);
+
                     } else if (actionId == ActionId.ACTION_REMOVEITEM) {
 
                         hashMap.remove(key);
 
                         // store back
                         writeAndEncryptStorage(keyStore, hashMap);
+
+                        PluginResult pluginResult = new PluginResult(PluginResult.Status.OK);
+                        pluginResult.setKeepCallback(false);
+                        callbackContext.sendPluginResult(pluginResult);
                     }
                 }
             }
@@ -301,17 +326,7 @@ public class SecureLocalStorage extends CordovaPlugin {
 
             return keyStore;
         }
-        catch (IOException e){
-            throw new SecureLocalStorageException("Could not initialize keyStore", e);
-        } catch (CertificateException e) {
-            throw new SecureLocalStorageException("Could not initialize keyStore", e);
-        } catch (NoSuchAlgorithmException e) {
-            throw new SecureLocalStorageException("Could not initialize keyStore", e);
-        } catch (KeyStoreException e) {
-            throw new SecureLocalStorageException("Could not initialize keyStore", e);
-        } catch (NoSuchProviderException e) {
-            throw new SecureLocalStorageException("Could not initialize keyStore", e);
-        } catch (InvalidAlgorithmParameterException e) {
+        catch (Exception e){
             throw new SecureLocalStorageException("Could not initialize keyStore", e);
         }
     }
@@ -326,8 +341,8 @@ public class SecureLocalStorage extends CordovaPlugin {
 			if (keyStore.containsAlias(SECURELOCALSTORAGEALIAS)) {
                 keyStore.deleteEntry(SECURELOCALSTORAGEALIAS);
 			}
-        } catch (KeyStoreException e) {
-		     throw new SecureLocalStorageException("Could not delete keystore alias");
+        } catch (Exception e) {
+		     throw new SecureLocalStorageException(e.getMessage(), e);
         }
     }
 
@@ -343,10 +358,8 @@ public class SecureLocalStorage extends CordovaPlugin {
                     ((X509Certificate) c).checkValidity();
                 }
             }
-        } catch (CertificateException e) {
-        } catch (NoSuchAlgorithmException e) {
-        } catch (KeyStoreException e) {
-        } catch (IOException e) {
+        } catch (Exception e) {
+            throw new SecureLocalStorageException(e.getMessage(), e);
         }
     }
 
@@ -428,17 +441,7 @@ public class SecureLocalStorage extends CordovaPlugin {
                 fos.close();
             }
 
-        } catch (IOException e) {
-            throw new SecureLocalStorageException("Error generating key", e);
-        } catch (NoSuchPaddingException e) {
-            throw new SecureLocalStorageException("Error generating key", e);
-        } catch (InvalidKeyException e) {
-            throw new SecureLocalStorageException("Error generating key", e);
-        } catch (NoSuchAlgorithmException e) {
-            throw new SecureLocalStorageException("Error generating key", e);
-        } catch (KeyStoreException e) {
-            throw new SecureLocalStorageException("Error generating key", e);
-        } catch (UnrecoverableEntryException e) {
+        } catch (Exception e) {
             throw new SecureLocalStorageException("Error generating key", e);
         }
     }
@@ -489,21 +492,7 @@ public class SecureLocalStorage extends CordovaPlugin {
             }
             return hashMap;
         }
-        catch(IOException e) {
-            throw new SecureLocalStorageException("Error decrypting storage",e);
-        } catch (NoSuchPaddingException e) {
-            throw new SecureLocalStorageException("Error decrypting storage",e);
-        } catch (InvalidKeyException e) {
-            throw new SecureLocalStorageException("Error decrypting storage",e);
-        } catch (NoSuchAlgorithmException e) {
-            throw new SecureLocalStorageException("Error decrypting storage",e);
-        } catch (KeyStoreException e) {
-            throw new SecureLocalStorageException("Error decrypting storage",e);
-        } catch (NoSuchProviderException e) {
-            throw new SecureLocalStorageException("Error decrypting storage",e);
-        } catch (UnrecoverableEntryException e) {
-            throw new SecureLocalStorageException("Error decrypting storage",e);
-        } catch (ClassNotFoundException e) {
+        catch(Exception e) {
             throw new SecureLocalStorageException("Error decrypting storage",e);
         }
     }
@@ -542,21 +531,7 @@ public class SecureLocalStorage extends CordovaPlugin {
             }
 
         }
-        catch (IOException e){
-            throw new SecureLocalStorageException("Error encrypting storage",e);
-        } catch (NoSuchPaddingException e) {
-            throw new SecureLocalStorageException("Error encrypting storage",e);
-        } catch (InvalidKeyException e) {
-            throw new SecureLocalStorageException("Error encrypting storage",e);
-        } catch (NoSuchAlgorithmException e) {
-            throw new SecureLocalStorageException("Error encrypting storage",e);
-        } catch (KeyStoreException e) {
-            throw new SecureLocalStorageException("Error encrypting storage",e);
-        } catch (NoSuchProviderException e) {
-            throw new SecureLocalStorageException("Error encrypting storage",e);
-        } catch (UnrecoverableEntryException e) {
-            throw new SecureLocalStorageException("Error encrypting storage",e);
-        } catch (ClassNotFoundException e) {
+        catch (Exception e){
             throw new SecureLocalStorageException("Error encrypting storage",e);
         }
     }
