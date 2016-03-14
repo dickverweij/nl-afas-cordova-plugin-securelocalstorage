@@ -1,11 +1,16 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <plugin xmlns="http://www.phonegap.com/ns/plugins/1.0" xmlns:android="http://schemas.android.com/apk/res/android" 
-        id="nl-afas-cordova-plugin-securelocalstorage" version="0.1.7">
+        id="nl-afas-cordova-plugin-securelocalstorage" version="0.1.8">
 
     <name>Secure LocalStorage</name>
     <description>Secure localStorage. This plugin will store local data encrypted using the IOS keychain or the Android keystore. Use it to store temporary sensitive data which has to survive an app exit/shutdown.</description>
     <license>MIT</license>
 
+    <dependency
+      id="es6-promise-plugin"
+      url="https://github.com/vstirbu/PromisesPlugin.git">
+    </dependency>
+  
     <engines>
         <engine name="cordova" version=">=3.0.0" />
     </engines>
