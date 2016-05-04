@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <plugin xmlns="http://www.phonegap.com/ns/plugins/1.0" xmlns:android="http://schemas.android.com/apk/res/android" 
-        id="nl-afas-cordova-plugin-securelocalstorage" version="0.1.8">
+        id="nl-afas-cordova-plugin-securelocalstorage" version="0.1.9">
 
     <name>Secure LocalStorage</name>
     <description>Secure localStorage. This plugin will store local data encrypted using the IOS keychain or the Android keystore. Use it to store temporary sensitive data which has to survive an app exit/shutdown.</description>
@@ -21,7 +21,7 @@
 
     <!-- Android -->
     <platform name="android">
-        <source-file src="src/android/nl/afas/cordova/plugin/SecureLocalStorage/SecureLocalStorage.java" target-dir="src/nl/afas/cordova/plugin/secureLocalStorage" />
+        <source-file src="src/android/nl/afas/cordova/plugin/secureLocalStorage/SecureLocalStorage.java" target-dir="src/nl/afas/cordova/plugin/secureLocalStorage" />
         <config-file target="res/xml/config.xml" parent="/*">
             <feature name="SecureLocalStorage">
                 <param name="android-package" value="nl.afas.cordova.plugin.secureLocalStorage.SecureLocalStorage" />
