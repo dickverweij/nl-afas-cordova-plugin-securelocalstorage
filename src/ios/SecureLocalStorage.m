@@ -146,19 +146,38 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     [self.commandDelegate sendPluginResult:pluginResult callbackId: command.callbackId];
     
     [self.commandDelegate runInBackground:^{
-		@synchronized(self) {
-			NSMutableDictionary * dict = [self readFromSecureStorage];
+		
+		NSMutableDictionary * dict = [self readFromSecureStorage];
 
-			if (dict == nil) {
-				dict = [NSMutableDictionary new];
-				[self writeToSecureStorage:dict];
+		if (![[NSUserDefaults standardUserDefaults] objectForKey:@"FirstRunSecureLocalStorage"]) {				
+			
+			if (dict != nil) {
+				if ([[dict valueForKey:@"MustBeDeletedByNextInstall"] isEquealToString: @"1"]) {
+				
+					dict = [NSMutableDictionary new];
+					[self writeToSecureStorage:dict];
+				}
 			}
-
-			CDVPluginResult * pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
-            [pluginResult setKeepCallback: [NSNumber numberWithBool:NO]];
-            
-			[self.commandDelegate sendPluginResult:pluginResult callbackId: command.callbackId];
+			
+			[[NSUserDefaults standardUserDefaults] setValue:@"OADMIP" forKey:@"FirstRunSecureLocalStorage"];
+			[[NSUserDefaults standardUserDefaults] synchronize];				
 		}
+					
+		if (dict == nil) {
+			dict = [NSMutableDictionary new];
+			[self writeToSecureStorage:dict];
+		}
+		if (![[dict valueForKey:@"MustBeDeletedByNextInstall"] isEquealToString: @"1"]) {
+			[dict setValue:@"1" forKey:@"MustBeDeletedByNextInstall"];
+			[self writeToSecureStorage:dict];
+		}
+				
+		CDVPluginResult * pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+		[pluginResult setKeepCallback: [NSNumber numberWithBool:NO]];
+		
+		NSLog(@"SecureLocalStorage initialized");
+		[self.commandDelegate sendPluginResult:pluginResult callbackId: command.callbackId];
+		
 	}];
 }
 
