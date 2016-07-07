@@ -152,7 +152,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 		if (![[NSUserDefaults standardUserDefaults] objectForKey:@"FirstRunSecureLocalStorage"]) {				
 			
 			if (dict != nil) {
-				if ([[dict valueForKey:@"MustBeDeletedByNextInstall"] isEquealToString: @"1"]) {
+				if ([[dict valueForKey:@"MustBeDeletedByNextInstall"] isEqualToString: @"1"]) {
 				
 					dict = [NSMutableDictionary new];
 					[self writeToSecureStorage:dict];
@@ -167,7 +167,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			dict = [NSMutableDictionary new];
 			[self writeToSecureStorage:dict];
 		}
-		if (![[dict valueForKey:@"MustBeDeletedByNextInstall"] isEquealToString: @"1"]) {
+		if (![[dict valueForKey:@"MustBeDeletedByNextInstall"] isEqualToString: @"1"]) {
 			[dict setValue:@"1" forKey:@"MustBeDeletedByNextInstall"];
 			[self writeToSecureStorage:dict];
 		}
