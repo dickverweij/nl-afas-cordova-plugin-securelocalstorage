@@ -22,6 +22,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 package nl.afas.cordova.plugin.secureLocalStorage;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.File;
 
 
@@ -35,24 +37,20 @@ import org.apache.cordova.CordovaWebView;
 import org.apache.cordova.CallbackContext;
 import android.content.Context;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
 import java.io.PrintWriter;
-import java.io.RandomAccessFile;
 import java.io.StringWriter;
 import java.math.BigInteger;
 
 import android.os.Build;
 import android.security.KeyPairGeneratorSpec;
 
-import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.KeyPairGenerator;
 import java.security.KeyStore;
@@ -61,14 +59,9 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.UnrecoverableEntryException;
 import java.security.cert.Certificate;
-import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
-import java.security.interfaces.RSAPrivateKey;
-import java.security.interfaces.RSAPublicKey;
-import java.security.spec.InvalidKeySpecException;
-import java.security.spec.KeySpec;
-import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 
 
@@ -82,9 +75,6 @@ import javax.security.auth.x500.X500Principal;
 
 import org.json.JSONException;
 
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class SecureLocalStorage extends CordovaPlugin {
@@ -113,7 +103,9 @@ public class SecureLocalStorage extends CordovaPlugin {
     private static final String SECURELOCALSTORAGEKEY =  "secureLocalStorage.kdat";
     private static final String SECURELOCALSTORAGEALIAS = "SECURELOCALSTORAGEPPKEYALIAS";
 
-    private final ReentrantLock lock = new ReentrantLock();
+    private final ReentrantLock lock = new ReentrantLock();   
+    private static SecretKey _key = null;
+
     private CordovaInterface _cordova;
 
     @Override
@@ -124,7 +116,6 @@ public class SecureLocalStorage extends CordovaPlugin {
 
     @Override
     public boolean execute(final String action, final JSONArray args, final CallbackContext callbackContext) throws JSONException {
-
 
         final ActionId actionId = getActionId(action);
         if (actionId == ActionId.ACTION_NONE) {
@@ -169,7 +160,7 @@ public class SecureLocalStorage extends CordovaPlugin {
     private void handleAction(ActionId actionId, JSONArray args, CallbackContext callbackContext) throws SecureLocalStorageException, JSONException {
         if (Build.VERSION.SDK_INT < 18) {
             throw new SecureLocalStorageException("Invalid API Level (must be >= 18");
-        }
+        }       
 
         File file = _cordova.getActivity().getBaseContext().getFileStreamPath(SECURELOCALSTORAGEFILE);
         HashMap<String, String> hashMap = new HashMap<String, String>();
@@ -182,6 +173,13 @@ public class SecureLocalStorage extends CordovaPlugin {
             // clear just deletes the storage file
             if (actionId == ActionId.ACTION_CLEAR) {
                 clear(file, keyStore);
+				try {
+                  keyStore = initKeyStore();
+                  generateKey(keyStore);                
+				}
+				catch(SecureLocalStorageException ex2) {
+
+				}
                 PluginResult pluginResult = new PluginResult(PluginResult.Status.OK);
                 pluginResult.setKeepCallback(false);
                 callbackContext.sendPluginResult(pluginResult);
@@ -192,19 +190,35 @@ public class SecureLocalStorage extends CordovaPlugin {
 
                     try {
                         checkValidity();
+                        
                         if (file.exists()) {
+                        
                             // save hashmap for re-initializing certificate
                             hashMap = readAndDecryptStorage(keyStore);
-                            clear(file, keyStore);
-
-
-                            keyStore = initKeyStore();
-                            generateKey(keyStore);
-                            writeAndEncryptStorage(keyStore, hashMap);
-
+							
+							// only clear file if untouched for 10 days
+                            if ((new Date().getTime() - file.lastModified()) > (10 * 24 * 60 * 60 * 1000)) {
+                              
+                              clear(file, keyStore);
+                              
+                              keyStore = initKeyStore();
+                              
+                              generateKey(keyStore);
+                              
+                              writeAndEncryptStorage(keyStore, hashMap);
+                              
+                            }
                         }
                     } catch (SecureLocalStorageException ex) {
                         clear(file, keyStore);
+                        try {
+                          keyStore = initKeyStore();
+                          generateKey(keyStore);                          
+                        }
+                        catch(SecureLocalStorageException ex2) {
+
+                        }
+
                     }
                     PluginResult pluginResult = new PluginResult(PluginResult.Status.OK);
                     pluginResult.setKeepCallback(false);
@@ -364,23 +378,32 @@ public class SecureLocalStorage extends CordovaPlugin {
     }
 
     private SecretKey getSecretKey(KeyStore keyStore) throws NoSuchAlgorithmException, UnrecoverableEntryException, KeyStoreException, NoSuchProviderException, NoSuchPaddingException, InvalidKeyException, IOException, ClassNotFoundException {
+
+        if (_key != null) {
+          return _key;
+        }
+      
         KeyStore.PrivateKeyEntry privateKeyEntry = (KeyStore.PrivateKeyEntry) keyStore.getEntry(SECURELOCALSTORAGEALIAS, null);
 
+        
+        SecretKey key;
+
         FileInputStream fis = _cordova.getActivity().openFileInput(SECURELOCALSTORAGEKEY);
-        ArrayList<Byte> values = new ArrayList<Byte>();
         try {
 
             Cipher output = Cipher.getInstance("RSA/ECB/PKCS1Padding");
+            
             output.init(Cipher.DECRYPT_MODE, privateKeyEntry.getPrivateKey());
 
+            
             CipherInputStream cipherInputStream = new CipherInputStream(
                     fis, output);
             try {
 
-                int nextByte;
-                while ((nextByte = cipherInputStream.read()) != -1) {
-                    values.add((byte) nextByte);
-                }
+              ObjectInputStream ois = new ObjectInputStream(new BufferedInputStream(cipherInputStream));
+
+              key = (SecretKey) ois.readObject();
+
             }
             finally {
                 cipherInputStream.close();
@@ -389,20 +412,9 @@ public class SecureLocalStorage extends CordovaPlugin {
         finally {
             fis.close();
         }
-
-        byte[] bytes = new byte[values.size()];
-        for (int i = 0; i < bytes.length; i++) {
-            bytes[i] = values.get(i);
-        }
-
-        SecretKey key;
-        ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(bytes));
-        try {
-            key = (SecretKey) ois.readObject();
-        }
-        finally {
-            ois.close();
-        }
+        
+        // store key for the lifetime for the app
+        _key = key;
         return key;
     }
 
@@ -450,46 +462,35 @@ public class SecureLocalStorage extends CordovaPlugin {
     @SuppressWarnings("unchecked")
     private HashMap<String, String> readAndDecryptStorage(KeyStore keyStore) throws SecureLocalStorageException {
         try {
+          
             // obtain encrypted key
             SecretKey key = getSecretKey(keyStore);
+            File f = new File(SECURELOCALSTORAGEFILE);
+            
 
             FileInputStream fis = _cordova.getActivity().openFileInput(SECURELOCALSTORAGEFILE);
-            ArrayList<Byte> values = new ArrayList<Byte>();
+            HashMap<String, String> hashMap;
             try {
 
-                Cipher output = Cipher.getInstance("DES");
-                output.init(Cipher.DECRYPT_MODE, key);
+              Cipher output = Cipher.getInstance("DES");
+              output.init(Cipher.DECRYPT_MODE, key);
 
-                CipherInputStream cipherInputStream = new CipherInputStream(
-                        fis, output);
-                try {
+              CipherInputStream cipherInputStream = new CipherInputStream(
+                fis, output);
 
-                    int nextByte;
-                    while ((nextByte = cipherInputStream.read()) != -1) {
-                        values.add((byte) nextByte);
-                    }
-                }
-                finally {
-                    cipherInputStream.close();
-                }
+              try {
+                ObjectInputStream ois = new ObjectInputStream(new BufferedInputStream(cipherInputStream));
+                hashMap = (HashMap<String, String>) ois.readObject();
+              }
+              finally {
+                cipherInputStream.close();
+              }
             }
             finally {
-                fis.close();
+              fis.close();
             }
 
-            byte[] bytes = new byte[values.size()];
-            for (int i = 0; i < bytes.length; i++) {
-                bytes[i] = values.get(i);
-            }
-
-            HashMap<String,String> hashMap;
-            ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(bytes));
-            try {
-                hashMap = (HashMap<String,String>) ois.readObject();
-            }
-            finally {
-                ois.close();
-            }
+            
             return hashMap;
         }
         catch(Exception e) {
@@ -499,21 +500,11 @@ public class SecureLocalStorage extends CordovaPlugin {
 
     private void writeAndEncryptStorage(KeyStore keyStore, HashMap<String, String> hashMap) throws SecureLocalStorageException {
         try {
-            ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            try {
-                ObjectOutputStream oos = new ObjectOutputStream(bos);
-                try {
-                    oos.writeObject(hashMap);
-                } finally {
-                    oos.close();
-                }
-            } finally {
-                bos.close();
-            }
-
+            
             SecretKey key = getSecretKey(keyStore);
 
             Cipher input = Cipher.getInstance("DES");
+            
             input.init(Cipher.ENCRYPT_MODE, key);
 
             // encrypt the hashmap
@@ -522,18 +513,27 @@ public class SecureLocalStorage extends CordovaPlugin {
                 CipherOutputStream cipherOutputStream = new CipherOutputStream(
                         fos, input);
                 try {
-                    cipherOutputStream.write(bos.toByteArray());
+                    ObjectOutputStream oos = new ObjectOutputStream(new BufferedOutputStream(cipherOutputStream));
+
+                    try {
+                      oos.writeObject(hashMap);
+
+                    } finally {
+                      oos.close();
+                    }
                 } finally {
                     cipherOutputStream.close();
                 }
             } finally {
                 fos.close();
             }
-
+            
         }
         catch (Exception e){
             throw new SecureLocalStorageException("Error encrypting storage",e);
         }
+
+      
     }
 }
 
