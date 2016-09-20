@@ -1,0 +1,109 @@
+0 info it worked if it ends with ok
+1 verbose cli [ 'C:\\Program Files\\nodejs\\node.exe',
+1 verbose cli   'C:\\Program Files\\nodejs\\node_modules\\npm\\bin\\npm-cli.js',
+1 verbose cli   'publish' ]
+2 info using npm@2.15.5
+3 info using node@v4.4.5
+4 verbose publish [ '.' ]
+5 silly cache add args [ '.', null ]
+6 verbose cache add spec .
+7 silly cache add parsed spec Result {
+7 silly cache add   raw: '.',
+7 silly cache add   scope: null,
+7 silly cache add   name: null,
+7 silly cache add   rawSpec: '.',
+7 silly cache add   spec: 'C:\\Users\\dvy\\Source\\Repos\\nl-afas-cordova-plugin-securelocalstorage',
+7 silly cache add   type: 'directory' }
+8 verbose addLocalDirectory C:\Users\dvy\AppData\Roaming\npm-cache\nl-afas-cordova-plugin-securelocalstorage\0.1.14\package.tgz not in flight; packing
+9 verbose correctMkdir C:\Users\dvy\AppData\Roaming\npm-cache correctMkdir not in flight; initializing
+10 verbose tar pack [ 'C:\\Users\\dvy\\AppData\\Roaming\\npm-cache\\nl-afas-cordova-plugin-securelocalstorage\\0.1.14\\package.tgz',
+10 verbose tar pack   'C:\\Users\\dvy\\Source\\Repos\\nl-afas-cordova-plugin-securelocalstorage' ]
+11 verbose tarball C:\Users\dvy\AppData\Roaming\npm-cache\nl-afas-cordova-plugin-securelocalstorage\0.1.14\package.tgz
+12 verbose folder C:\Users\dvy\Source\Repos\nl-afas-cordova-plugin-securelocalstorage
+13 info prepublish nl-afas-cordova-plugin-securelocalstorage@0.1.14
+14 verbose addLocalTarball adding from inside cache C:\Users\dvy\AppData\Roaming\npm-cache\nl-afas-cordova-plugin-securelocalstorage\0.1.14\package.tgz
+15 verbose correctMkdir C:\Users\dvy\AppData\Roaming\npm-cache correctMkdir not in flight; initializing
+16 silly cache afterAdd nl-afas-cordova-plugin-securelocalstorage@0.1.14
+17 verbose afterAdd C:\Users\dvy\AppData\Roaming\npm-cache\nl-afas-cordova-plugin-securelocalstorage\0.1.14\package\package.json not in flight; writing
+18 verbose correctMkdir C:\Users\dvy\AppData\Roaming\npm-cache correctMkdir not in flight; initializing
+19 verbose afterAdd C:\Users\dvy\AppData\Roaming\npm-cache\nl-afas-cordova-plugin-securelocalstorage\0.1.14\package\package.json written
+20 silly publish { name: 'nl-afas-cordova-plugin-securelocalstorage',
+20 silly publish   version: '0.1.14',
+20 silly publish   description: 'Secure localStorage. This plugin will store local data encrypted using the IOS keychain or the Android keystore. Use it to store temporary sensitive data which has to survive an app exit/shutdown.',
+20 silly publish   cordova:
+20 silly publish    { id: 'nl-afas-cordova-plugin-securelocalstorage',
+20 silly publish      platforms: [ 'android', 'ios' ] },
+20 silly publish   repository:
+20 silly publish    { type: 'git',
+20 silly publish      url: 'git+https://github.com/dickverweij/nl-afas-cordova-plugin-securelocalstorage.git' },
+20 silly publish   keywords: [ 'ecosystem:cordova', 'cordova-android', 'cordova-ios' ],
+20 silly publish   engines: [ { name: 'cordova', version: '>=3.0.0' } ],
+20 silly publish   author: { name: 'Dick Verweij' },
+20 silly publish   license: 'MIT',
+20 silly publish   bugs: { url: 'https://github.com/dickverweij/nl-afas-cordova-plugin-securelocalstorage/issues' },
+20 silly publish   homepage: 'https://github.com/dickverweij/nl-afas-cordova-plugin-securelocalstorage#readme',
+20 silly publish   readme: 'Secure localStorage for Cordova\r\n==========================\r\nThis plugin will store local data encrypted using the IOS keychain or the Android keystore.\r\n\r\nANDROID: The local storage will have an expiration date of 3 years if left untouched. If the encrypted file is invalid,\r\nthe localstorage will clear itself. A clear() will also re-initialize the certificate.\r\n\r\nWARNING: This is no protection for hackers who have physical/root access to your phone. \r\nWARNING: If key generation encounters an error (on some rooted android devices), the plugin falls back to NON encrypted localstorage\r\n\r\nUse it to store temporary sensitive data which has to survive an app exit/shutdown. \r\n\r\nRequirements\r\n-------------\r\n- Android 4.3 or higher / iOS 6 or higher\r\n- Cordova 3.0 or higher\r\n\r\n    Installation\r\n-------------\r\n    cordova plugin add nl-afas-cordova-plugin-securelocalstorage\r\n\r\nUsage\r\n------\r\n    \r\n    cordova.plugins.SecureLocalStorage.setItem("key" , "value");\r\n\r\n    cordova.plugins.SecureLocalStorage.getItem("key").then(function (value){...})\r\n\r\n    cordova.plugins.SecureLocalStorage.removeItem("key");\r\n\r\n    cordova.plugins.SecureLocalStorage.clear();\r\n\r\n\r\n\r\n\r\nLICENSE\r\n--------\r\nThe MIT License (MIT)\r\n\r\nCopyright (c) 2015 dickydick1969@hotmail.com Dick Verweij AFAS Software BV - d.verweij@afas.nl\r\n\r\n\r\nPermission is hereby granted, free of charge, to any person obtaining a copy of\r\nthis software and associated documentation files (the "Software"), to deal in\r\nthe Software without restriction, including without limitation the rights to\r\nuse, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of\r\nthe Software, and to permit persons to whom the Software is furnished to do so,\r\nsubject to the following conditions:\r\n\r\nThe above copyright notice and this permission notice shall be included in all\r\ncopies or substantial portions of the Software.\r\n\r\nTHE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\r\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS\r\nFOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR\r\nCOPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER\r\nIN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN\r\nCONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.\r\n',
+20 silly publish   readmeFilename: 'README.md',
+20 silly publish   gitHead: '076d5510e52c8c0ffce3df44721fc42b3878e4a1',
+20 silly publish   _id: 'nl-afas-cordova-plugin-securelocalstorage@0.1.14',
+20 silly publish   scripts: {},
+20 silly publish   _shasum: '3a164319d3e7fac984437244682380de44db3762',
+20 silly publish   _from: '.' }
+21 verbose getPublishConfig undefined
+22 silly mapToRegistry name nl-afas-cordova-plugin-securelocalstorage
+23 silly mapToRegistry using default registry
+24 silly mapToRegistry registry https://registry.npmjs.org/
+25 silly mapToRegistry data Result {
+25 silly mapToRegistry   raw: 'nl-afas-cordova-plugin-securelocalstorage',
+25 silly mapToRegistry   scope: null,
+25 silly mapToRegistry   name: 'nl-afas-cordova-plugin-securelocalstorage',
+25 silly mapToRegistry   rawSpec: '',
+25 silly mapToRegistry   spec: 'latest',
+25 silly mapToRegistry   type: 'tag' }
+26 silly mapToRegistry uri https://registry.npmjs.org/nl-afas-cordova-plugin-securelocalstorage
+27 verbose publish registryBase https://registry.npmjs.org/
+28 silly publish uploading C:\Users\dvy\AppData\Roaming\npm-cache\nl-afas-cordova-plugin-securelocalstorage\0.1.14\package.tgz
+29 verbose request uri https://registry.npmjs.org/nl-afas-cordova-plugin-securelocalstorage
+30 verbose request sending authorization for write operation
+31 info attempt registry request try #1 at 13:24:40
+32 verbose request using bearer token for auth
+33 verbose request id 7c606e3e5837f053
+34 http request PUT https://registry.npmjs.org/nl-afas-cordova-plugin-securelocalstorage
+35 http 403 https://registry.npmjs.org/nl-afas-cordova-plugin-securelocalstorage
+36 verbose headers { 'content-type': 'application/json',
+36 verbose headers   'cache-control': 'max-age=300',
+36 verbose headers   'content-length': '96',
+36 verbose headers   'accept-ranges': 'bytes',
+36 verbose headers   date: 'Tue, 20 Sep 2016 11:24:41 GMT',
+36 verbose headers   via: '1.1 varnish',
+36 verbose headers   connection: 'keep-alive',
+36 verbose headers   'x-served-by': 'cache-ams4134-AMS',
+36 verbose headers   'x-cache': 'MISS',
+36 verbose headers   'x-cache-hits': '0',
+36 verbose headers   'x-timer': 'S1474370680.382922,VS0,VE1308',
+36 verbose headers   vary: 'Accept-Encoding' }
+37 verbose request invalidating C:\Users\dvy\AppData\Roaming\npm-cache\registry.npmjs.org\nl-afas-cordova-plugin-securelocalstorage on PUT
+38 error publish Failed PUT 403
+39 verbose stack Error: "You cannot publish over the previously published version 0.1.14." : nl-afas-cordova-plugin-securelocalstorage
+39 verbose stack     at makeError (C:\Program Files\nodejs\node_modules\npm\node_modules\npm-registry-client\lib\request.js:264:12)
+39 verbose stack     at CachingRegistryClient.<anonymous> (C:\Program Files\nodejs\node_modules\npm\node_modules\npm-registry-client\lib\request.js:252:14)
+39 verbose stack     at Request._callback (C:\Program Files\nodejs\node_modules\npm\node_modules\npm-registry-client\lib\request.js:172:14)
+39 verbose stack     at Request.self.callback (C:\Program Files\nodejs\node_modules\npm\node_modules\request\request.js:200:22)
+39 verbose stack     at emitTwo (events.js:87:13)
+39 verbose stack     at Request.emit (events.js:172:7)
+39 verbose stack     at Request.<anonymous> (C:\Program Files\nodejs\node_modules\npm\node_modules\request\request.js:1067:10)
+39 verbose stack     at emitOne (events.js:82:20)
+39 verbose stack     at Request.emit (events.js:169:7)
+39 verbose stack     at IncomingMessage.<anonymous> (C:\Program Files\nodejs\node_modules\npm\node_modules\request\request.js:988:12)
+40 verbose statusCode 403
+41 verbose pkgid nl-afas-cordova-plugin-securelocalstorage
+42 verbose cwd C:\Users\dvy\Source\Repos\nl-afas-cordova-plugin-securelocalstorage
+43 error Windows_NT 10.0.10586
+44 error argv "C:\\Program Files\\nodejs\\node.exe" "C:\\Program Files\\nodejs\\node_modules\\npm\\bin\\npm-cli.js" "publish"
+45 error node v4.4.5
+46 error npm  v2.15.5
+47 error code E403
+48 error "You cannot publish over the previously published version 0.1.14." : nl-afas-cordova-plugin-securelocalstorage
+49 error If you need help, you may report this error at:
+49 error     <https://github.com/npm/npm/issues>
+50 verbose exit [ 1, true ]
