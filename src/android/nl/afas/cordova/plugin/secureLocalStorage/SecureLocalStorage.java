@@ -50,6 +50,8 @@ import java.math.BigInteger;
 
 import android.os.Build;
 import android.security.KeyPairGeneratorSpec;
+import android.util.Log;
+
 
 import java.security.InvalidKeyException;
 import java.security.KeyPairGenerator;
@@ -454,6 +456,7 @@ public class SecureLocalStorage extends CordovaPlugin {
             }
 
         } catch (Exception e) {
+			Log.e("SecureStorage","Read",e);
             throw new SecureLocalStorageException("Error generating key", e);
         }
     }
@@ -530,6 +533,7 @@ public class SecureLocalStorage extends CordovaPlugin {
             
         }
         catch (Exception e){
+			Log.e("SecureStorage","Write",e);
             throw new SecureLocalStorageException("Error encrypting storage",e);
         }
 
