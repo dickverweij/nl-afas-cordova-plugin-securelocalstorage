@@ -429,7 +429,9 @@ public class SecureLocalStorage extends CordovaPlugin {
 
   private void generateKey(KeyStore keyStore) throws SecureLocalStorageException {
 
-    try {
+  try {
+	  _key = null;
+	  
       SecretKey key = KeyGenerator.getInstance("DES").generateKey();
       ByteArrayOutputStream bos = new ByteArrayOutputStream();
       try {
